@@ -1,19 +1,103 @@
-//
-//  iStartTests.swift
-//  iStartTests
-//
-//  Created by 胡国洋 on 2026/5/16.
-//
-
+import Foundation
 import Testing
 @testable import iStart
 
 struct iStartTests {
+    @MainActor
+    @Test func scannerFindsApplicationsAndSortsByName() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Notes", bundleIdentifier: "com.example.notes", in: root)
+        try makeApp(named: "Calendar", bundleIdentifier: "com.example.calendar", in: root)
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-        // Swift Testing Documentation
-        // https://developer.apple.com/documentation/testing
+        let scanner = ApplicationScanner(searchRoots: [root])
+        let apps = scanner.scan()
+
+        #expect(apps.map(\.name) == ["Calendar", "Notes"])
+        #expect(apps.map(\.bundleIdentifier) == ["com.example.calendar", "com.example.notes"])
     }
 
+    @MainActor
+    @Test func scannerDoesNotExposeAppExtensionAsDisplayName() throws {
+        let root = try temporaryDirectory()
+        let appURL = root.appendingPathComponent("Plain.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: appURL, withIntermediateDirectories: true)
+
+        let scanner = ApplicationScanner(searchRoots: [root])
+        let apps = scanner.scan()
+
+        #expect(apps.map(\.name) == ["Plain"])
+    }
+
+    @MainActor
+    @Test func modelFiltersByNameAndBundleIdentifier() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Pixelmator Pro", bundleIdentifier: "com.pixelmatorteam.pixelmator.x", in: root)
+        try makeApp(named: "Terminal", bundleIdentifier: "com.apple.Terminal", in: root)
+
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        model.reloadApplications()
+
+        model.searchText = "pixel"
+        #expect(model.filteredApplications.map(\.name) == ["Pixelmator Pro"])
+
+        model.searchText = "apple.Terminal"
+        #expect(model.filteredApplications.map(\.name) == ["Terminal"])
+    }
+
+    @MainActor
+    @Test func pinnedAppsPersistInOrder() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Alpha", bundleIdentifier: "com.example.alpha", in: root)
+        try makeApp(named: "Beta", bundleIdentifier: "com.example.beta", in: root)
+        let storage = isolatedStorage()
+
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: storage)
+        model.reloadApplications()
+
+        let alpha = try #require(model.applications.first { $0.name == "Alpha" })
+        let beta = try #require(model.applications.first { $0.name == "Beta" })
+        model.togglePinned(beta)
+        model.togglePinned(alpha)
+
+        let reloaded = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: storage)
+        reloaded.reloadApplications()
+
+        #expect(reloaded.pinnedApplications.map(\.name) == ["Beta", "Alpha"])
+    }
+
+    @MainActor
+    @Test func hotKeyPersists() {
+        let storage = isolatedStorage()
+        storage.saveHotKey(.commandOptionSpace)
+
+        #expect(storage.loadHotKey() == .commandOptionSpace)
+    }
+
+    private func makeApp(named name: String, bundleIdentifier: String, in root: URL) throws {
+        let appURL = root.appendingPathComponent("\(name).app", isDirectory: true)
+        let contentsURL = appURL.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contentsURL, withIntermediateDirectories: true)
+
+        let plist: NSDictionary = [
+            "CFBundleIdentifier": bundleIdentifier,
+            "CFBundleName": name,
+            "CFBundleDisplayName": name,
+            "CFBundlePackageType": "APPL"
+        ]
+        _ = plist.write(to: contentsURL.appendingPathComponent("Info.plist"), atomically: true)
+    }
+
+    private func temporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("iStartTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private func isolatedStorage() -> StartMenuStorage {
+        let suiteName = "iStartTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        return StartMenuStorage(defaults: defaults)
+    }
 }

@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import SwiftUI
 
 final class StartMenuWindowController {
@@ -31,6 +32,9 @@ final class StartMenuWindowController {
         panel.hidesOnDeactivate = true
         panel.isMovableByWindowBackground = false
         panel.title = "iStart"
+        panel.onShouldHide = { [weak self] in
+            self?.hide()
+        }
 
         hideObserver = NotificationCenter.default.addObserver(
             forName: .startMenuShouldHide,
@@ -109,6 +113,28 @@ enum StartMenuMetrics {
 }
 
 final class StartMenuPanel: NSPanel {
+    var onShouldHide: (() -> Void)?
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, event.keyCode == UInt16(kVK_Escape) {
+            onShouldHide?()
+            return
+        }
+
+        super.sendEvent(event)
+    }
+
+    override func resignKey() {
+        super.resignKey()
+
+        if isVisible {
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.isVisible, !self.isKeyWindow else { return }
+                self.onShouldHide?()
+            }
+        }
+    }
 }

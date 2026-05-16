@@ -8,7 +8,7 @@ struct iStartApp: App {
     var body: some Scene {
         Settings {
             SettingsView(model: model)
-                .frame(width: 440)
+                .frame(width: 540, height: 420)
         }
         .commands {
             CommandGroup(replacing: .newItem) { }

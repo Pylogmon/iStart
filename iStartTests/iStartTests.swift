@@ -1,3 +1,4 @@
+import Carbon.HIToolbox
 import Foundation
 import Testing
 @testable import iStart
@@ -141,6 +142,28 @@ struct iStartTests {
         storage.saveHotKey(.commandOptionSpace)
 
         #expect(storage.loadHotKey() == .commandOptionSpace)
+    }
+
+    @MainActor
+    @Test func customHotKeyPersists() {
+        let storage = isolatedStorage()
+        let hotKey = HotKey.recorded(keyCode: 35, carbonModifiers: cmdKey | shiftKey, keyEquivalent: "p")
+
+        storage.saveHotKey(hotKey)
+
+        #expect(storage.loadHotKey() == hotKey)
+    }
+
+    @MainActor
+    @Test func legacyHotKeyRawValueLoads() {
+        let suiteName = "iStartTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults.set(HotKey.optionSpace.rawValue, forKey: "hotKey")
+
+        let storage = StartMenuStorage(defaults: defaults)
+
+        #expect(storage.loadHotKey() == .optionSpace)
     }
 
     private func makeApp(

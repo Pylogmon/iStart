@@ -13,10 +13,13 @@
 "Command Space" = "Command 空格";
 "Control Space" = "Control 空格";
 "Choose a folder that contains applications, such as your Applications folder." = "选择包含应用的文件夹，例如你的 Applications 文件夹。";
+"Choose a global keyboard shortcut for opening iStart from anywhere." = "选择一个可在任何位置打开 iStart 的全局键盘快捷键。";
 "Could not add application folder: %@" = "无法添加应用文件夹：%@";
 "Global shortcut is active." = "全局快捷键已启用。";
+"Go to System Settings" = "前往系统设置";
 "General" = "通用";
 "Hot key has not been registered yet." = "快捷键尚未注册。";
+"If Command Space is still used by Spotlight, turn off Spotlight's keyboard shortcut to avoid conflicts." = "如果 Command 空格仍被“聚焦”使用，请关闭“聚焦”的键盘快捷键以避免冲突。";
 "Indexed applications" = "已索引应用";
 "Indexing" = "索引";
 "iStart indexes applications from the standard macOS application folders and any extra folders listed below." = "iStart 会索引 macOS 标准应用文件夹以及下方列出的额外文件夹。";
@@ -44,6 +47,7 @@
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "无法注册快捷键，可能已被 macOS 或其他应用占用。OSStatus %d。";
 "Show iStart" = "显示 iStart";
 "Show Start Menu" = "显示开始菜单";
+"Spacebar" = "空格键";
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Unpin from Start" = "从开始菜单取消固定";

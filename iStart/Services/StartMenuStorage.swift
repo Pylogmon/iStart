@@ -44,11 +44,18 @@ struct StartMenuStorage {
     }
 
     func loadHotKey() -> HotKey {
-        HotKey.fromRawValue(defaults.string(forKey: Keys.hotKey) ?? HotKey.commandSpace.rawValue)
+        if let data = defaults.data(forKey: Keys.hotKey),
+           let hotKey = try? JSONDecoder().decode(HotKey.self, from: data) {
+            return hotKey
+        }
+
+        return HotKey.fromRawValue(defaults.string(forKey: Keys.hotKey) ?? HotKey.commandSpace.rawValue)
     }
 
     func saveHotKey(_ hotKey: HotKey) {
-        defaults.set(hotKey.rawValue, forKey: Keys.hotKey)
+        if let data = try? JSONEncoder().encode(hotKey) {
+            defaults.set(data, forKey: Keys.hotKey)
+        }
     }
 
     func loadApplicationSearchDirectoryBookmarks() -> [Data] {

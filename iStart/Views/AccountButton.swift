@@ -71,4 +71,23 @@ enum SystemSettingsOpener {
     static func openDefaultPage() {
         NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/System Settings.app"))
     }
+
+    static func openSpotlightShortcutsPage() {
+        let candidateURLs = [
+            "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts",
+            "x-apple.systempreferences:com.apple.preference.keyboard?Shortcuts"
+        ]
+
+        for candidateURL in candidateURLs {
+            guard let url = URL(string: candidateURL),
+                  NSWorkspace.shared.open(url)
+            else {
+                continue
+            }
+
+            return
+        }
+
+        openDefaultPage()
+    }
 }

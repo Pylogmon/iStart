@@ -18,40 +18,36 @@ struct SettingsView: View {
         .padding(.top, 8)
     }
 
-    private var hotKeySelection: Binding<String> {
+    private var hotKeySelection: Binding<HotKey> {
         Binding {
-            model.hotKey.rawValue
-        } set: { rawValue in
-            let hotKey = HotKey.fromRawValue(rawValue)
-            (NSApp.delegate as? AppDelegate)?.updateHotKey(hotKey)
+            model.hotKey
+        } set: { hotKey in
+            model.hotKey = hotKey
+            (NSApp.delegate as? AppDelegate)?.registerCurrentHotKey()
         }
     }
 }
 
 private struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
-    let hotKeySelection: Binding<String>
+    let hotKeySelection: Binding<HotKey>
 
     var body: some View {
         Form {
             Section {
-                LabeledContent("Show iStart") {
-                    Picker("Show iStart", selection: hotKeySelection) {
-                        ForEach(HotKey.all) { hotKey in
-                            Text(verbatim: hotKey.localizedTitle).tag(hotKey.rawValue)
-                        }
-                    }
-                    .labelsHidden()
-                    .frame(width: 220)
+                ShortcutPickerRow(
+                    title: String(localized: "Show iStart"),
+                    selectedHotKey: hotKeySelection.wrappedValue,
+                    status: model.hotKeyRegistrationStatus
+                ) { hotKey in
+                    hotKeySelection.wrappedValue = hotKey
                 }
-
-                Text(model.hotKeyRegistrationStatus.message)
-                    .font(.caption)
-                    .foregroundStyle(model.hotKeyRegistrationStatus == .registered ? Color.secondary : Color.orange)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             header: {
                 Text("Shortcut")
+            }
+            footer: {
+                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
             }
 
             Section {
@@ -64,6 +60,111 @@ private struct GeneralSettingsPane: View {
         .formStyle(.grouped)
         .padding(.horizontal, 24)
         .padding(.vertical, 18)
+    }
+}
+
+private struct ShortcutPickerRow: View {
+    let title: String
+    let selectedHotKey: HotKey
+    let status: HotKeyRegistrationStatus
+    let onSelect: (HotKey) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 16) {
+                Text(title)
+
+                Spacer(minLength: 24)
+
+                Menu {
+                    ForEach(HotKey.all) { hotKey in
+                        Button {
+                            onSelect(hotKey)
+                        } label: {
+                            HStack(spacing: 8) {
+                                if hotKey == selectedHotKey {
+                                    Image(systemName: "checkmark")
+                                }
+
+                                ShortcutInlineLabel(hotKey: hotKey)
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        ShortcutInlineLabel(hotKey: selectedHotKey)
+
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+            }
+
+            Label {
+                Text(status.message)
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: status.systemImage)
+            }
+            .font(.caption)
+            .foregroundStyle(status.foregroundStyle)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Label {
+                    Text("If Command Space is still used by Spotlight, turn off Spotlight's keyboard shortcut to avoid conflicts.")
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "magnifyingglass")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+                Spacer(minLength: 12)
+
+                Button("Go to System Settings") {
+                    SystemSettingsOpener.openSpotlightShortcutsPage()
+                }
+                .controlSize(.small)
+            }
+        }
+    }
+}
+
+private struct ShortcutInlineLabel: View {
+    let hotKey: HotKey
+
+    var body: some View {
+        Text(verbatim: hotKey.displayTitle)
+            .monospaced()
+            .accessibilityLabel(Text(verbatim: hotKey.localizedTitle))
+    }
+}
+
+private extension HotKeyRegistrationStatus {
+    var systemImage: String {
+        switch self {
+        case .unknown:
+            "keyboard"
+        case .registered:
+            "checkmark.circle.fill"
+        case .failed:
+            "exclamationmark.triangle.fill"
+        }
+    }
+
+    var foregroundStyle: Color {
+        switch self {
+        case .unknown:
+            .secondary
+        case .registered:
+            .secondary
+        case .failed:
+            .orange
+        }
     }
 }
 

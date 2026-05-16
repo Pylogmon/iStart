@@ -57,7 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func updateHotKey(_ hotKey: HotKey) {
-        model?.hotKey = hotKey
+        resolveModel().hotKey = hotKey
         registerCurrentHotKey()
     }
 

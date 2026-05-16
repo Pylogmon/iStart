@@ -13,6 +13,11 @@ final class StartMenuModel: ObservableObject {
             storage.saveHotKey(hotKey)
         }
     }
+    @Published var showsRecommendedSection: Bool {
+        didSet {
+            storage.saveShowsRecommendedSection(showsRecommendedSection)
+        }
+    }
     @Published var hotKeyRegistrationStatus: HotKeyRegistrationStatus = .unknown
     @Published private(set) var searchFocusToken = UUID()
 
@@ -25,6 +30,7 @@ final class StartMenuModel: ObservableObject {
         self.pinnedApplicationIDs = storage.loadPinnedIDs()
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
+        self.showsRecommendedSection = storage.loadShowsRecommendedSection()
     }
 
     var filteredApplications: [InstalledApplication] {
@@ -92,6 +98,24 @@ final class StartMenuModel: ObservableObject {
         }
 
         storage.savePinnedIDs(pinnedApplicationIDs)
+    }
+
+    func movePinnedApplication(_ source: InstalledApplication, toPositionOf destination: InstalledApplication) {
+        var orderedIDs = pinnedApplicationIDs
+        if orderedIDs.isEmpty {
+            orderedIDs = defaultPinnedApplications.map(\.id)
+        }
+
+        guard source.id != destination.id,
+              let sourceIndex = orderedIDs.firstIndex(of: source.id),
+              let destinationIndex = orderedIDs.firstIndex(of: destination.id)
+        else { return }
+
+        orderedIDs.remove(at: sourceIndex)
+        orderedIDs.insert(source.id, at: destinationIndex)
+
+        pinnedApplicationIDs = orderedIDs
+        storage.savePinnedIDs(orderedIDs)
     }
 
     private var defaultPinnedApplications: [InstalledApplication] {

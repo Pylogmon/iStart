@@ -7,6 +7,7 @@ struct StartMenuStorage {
         static let pinnedApplicationIDs = "pinnedApplicationIDs"
         static let recentApplicationIDs = "recentApplicationIDs"
         static let hotKey = "hotKey"
+        static let showsRecommendedSection = "showsRecommendedSection"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -27,6 +28,18 @@ struct StartMenuStorage {
 
     func saveRecentIDs(_ ids: [String]) {
         defaults.set(Array(ids.prefix(8)), forKey: Keys.recentApplicationIDs)
+    }
+
+    func loadShowsRecommendedSection() -> Bool {
+        guard defaults.object(forKey: Keys.showsRecommendedSection) != nil else {
+            return true
+        }
+
+        return defaults.bool(forKey: Keys.showsRecommendedSection)
+    }
+
+    func saveShowsRecommendedSection(_ showsRecommendedSection: Bool) {
+        defaults.set(showsRecommendedSection, forKey: Keys.showsRecommendedSection)
     }
 
     func loadHotKey() -> HotKey {

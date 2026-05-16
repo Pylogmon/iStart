@@ -19,6 +19,8 @@ struct SettingsView: View {
             }
 
             Section("Applications") {
+                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+
                 HStack {
                     Text(String.localizedStringWithFormat(String(localized: "%lld apps indexed"), model.applications.count))
                     Spacer()

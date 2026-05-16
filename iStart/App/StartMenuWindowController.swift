@@ -50,9 +50,12 @@ final class StartMenuWindowController {
     }
 
     func showAndFocusSearch() {
-        positionPanel()
+        let targetFrame = targetPanelFrame()
+        panel.setFrame(startingFrame(for: targetFrame), display: true)
+        panel.alphaValue = 0
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
+        animatePanelIn(to: targetFrame)
         model.focusSearch()
     }
 
@@ -60,7 +63,7 @@ final class StartMenuWindowController {
         panel.orderOut(nil)
     }
 
-    private func positionPanel() {
+    private func targetPanelFrame() -> NSRect {
         let screen = screenContainingMouse() ?? NSScreen.main
         let visibleFrame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let width = min(StartMenuMetrics.width, visibleFrame.width - 32)
@@ -68,7 +71,27 @@ final class StartMenuWindowController {
         let x = visibleFrame.midX - width / 2
         let y = visibleFrame.minY + 18
 
-        panel.setFrame(NSRect(x: x, y: y, width: width, height: height), display: true)
+        return NSRect(x: x, y: y, width: width, height: height)
+    }
+
+    private func startingFrame(for targetFrame: NSRect) -> NSRect {
+        targetFrame.offsetBy(dx: 0, dy: -StartMenuMetrics.appearAnimationOffset)
+    }
+
+    private func animatePanelIn(to targetFrame: NSRect) {
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            panel.setFrame(targetFrame, display: true)
+            panel.alphaValue = 1
+            return
+        }
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = StartMenuMetrics.appearAnimationDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+
+            panel.animator().setFrame(targetFrame, display: true)
+            panel.animator().alphaValue = 1
+        }
     }
 
     private func screenContainingMouse() -> NSScreen? {
@@ -80,6 +103,8 @@ final class StartMenuWindowController {
 enum StartMenuMetrics {
     static let width: CGFloat = 720
     static let height: CGFloat = 760
+    static let appearAnimationOffset: CGFloat = 34
+    static let appearAnimationDuration: TimeInterval = 0.18
 }
 
 final class StartMenuPanel: NSPanel {

@@ -20,6 +20,7 @@
 "Reload" = "重新加载";
 "Search for apps, settings, and documents" = "搜索应用、设置和文档";
 "Settings" = "设置";
+"Show recommended section" = "显示推荐区域";
 "Shortcut" = "快捷键";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "无法注册快捷键，可能已被 macOS 或其他应用占用。OSStatus %d。";
 "Show iStart" = "显示 iStart";

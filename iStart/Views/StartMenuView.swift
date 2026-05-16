@@ -1,9 +1,11 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct StartMenuView: View {
     @ObservedObject var model: StartMenuModel
     @State private var showsAllApps = false
+    @State private var draggedPinnedApplication: InstalledApplication?
     @Environment(\.openSettings) private var openSettings
     @FocusState private var searchFocused: Bool
 
@@ -19,7 +21,9 @@ struct StartMenuView: View {
                         allAppsSection
                     } else {
                         pinnedSection
-                        recommendedSection
+                        if model.showsRecommendedSection {
+                            recommendedSection
+                        }
                     }
                 } else {
                     searchResultsSection
@@ -77,16 +81,38 @@ struct StartMenuView: View {
                 showsAllApps = true
             }
 
-            LazyVGrid(columns: columns, spacing: 14) {
-                ForEach(model.pinnedApplications.prefix(18)) { application in
-                    ApplicationTile(application: application, isPinned: model.isPinned(application)) {
-                        launch(application)
-                    } onTogglePinned: {
-                        model.togglePinned(application)
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 14) {
+                    ForEach(model.pinnedApplications.prefix(pinnedApplicationLimit)) { application in
+                        ApplicationTile(application: application, isPinned: model.isPinned(application)) {
+                            launch(application)
+                        } onTogglePinned: {
+                            model.togglePinned(application)
+                        }
+                        .opacity(draggedPinnedApplication?.id == application.id ? 0.45 : 1)
+                        .onDrag {
+                            draggedPinnedApplication = application
+                            return NSItemProvider(object: application.id as NSString)
+                        }
+                        .onDrop(
+                            of: [.text],
+                            delegate: PinnedApplicationDropDelegate(
+                                destination: application,
+                                draggedApplication: $draggedPinnedApplication,
+                                model: model
+                            )
+                        )
                     }
                 }
+                .padding(.vertical, 2)
             }
+            .scrollIndicators(model.showsRecommendedSection ? .hidden : .automatic)
+            .frame(maxHeight: model.showsRecommendedSection ? 320 : 622)
         }
+    }
+
+    private var pinnedApplicationLimit: Int {
+        model.showsRecommendedSection ? 18 : 36
     }
 
     private var recommendedSection: some View {
@@ -215,5 +241,28 @@ struct StartMenuView: View {
 
     private func launch(_ application: InstalledApplication) {
         model.launch(application)
+    }
+}
+
+private struct PinnedApplicationDropDelegate: DropDelegate {
+    let destination: InstalledApplication
+    @Binding var draggedApplication: InstalledApplication?
+    let model: StartMenuModel
+
+    func dropEntered(info: DropInfo) {
+        guard let draggedApplication, draggedApplication.id != destination.id else { return }
+
+        withAnimation(.easeInOut(duration: 0.12)) {
+            model.movePinnedApplication(draggedApplication, toPositionOf: destination)
+        }
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedApplication = nil
+        return true
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
 }

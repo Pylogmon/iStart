@@ -20,6 +20,7 @@
 "Reload" = "Reload";
 "Search for apps, settings, and documents" = "Search for apps, settings, and documents";
 "Settings" = "Settings";
+"Show recommended section" = "Show recommended section";
 "Shortcut" = "Shortcut";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d.";
 "Show iStart" = "Show iStart";

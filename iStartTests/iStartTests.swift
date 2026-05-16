@@ -116,6 +116,21 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func modelSortsSearchResultsByMatchRelevance() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Keynote", bundleIdentifier: "com.apple.Keynote", in: root)
+        try makeApp(named: "My Notes", bundleIdentifier: "com.example.notes-helper", in: root)
+        try makeApp(named: "Notes", bundleIdentifier: "com.apple.Notes", in: root)
+
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        model.reloadApplications()
+
+        model.searchText = "note"
+
+        #expect(model.filteredApplications.map(\.name) == ["Notes", "My Notes", "Keynote"])
+    }
+
+    @MainActor
     @Test func pinnedAppsPersistInOrder() throws {
         let root = try temporaryDirectory()
         try makeApp(named: "Alpha", bundleIdentifier: "com.example.alpha", in: root)

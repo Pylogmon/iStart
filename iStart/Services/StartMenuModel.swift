@@ -43,9 +43,20 @@ final class StartMenuModel: ObservableObject {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return applications }
 
-        return applications.filter { application in
-            ApplicationSearchMatcher.matches(application, query: query)
-        }
+        return applications
+            .enumerated()
+            .compactMap { index, application -> (index: Int, application: InstalledApplication, score: Int)? in
+                guard let score = ApplicationSearchMatcher.score(application, query: query) else { return nil }
+                return (index, application, score)
+            }
+            .sorted { lhs, rhs in
+                if lhs.score != rhs.score {
+                    return lhs.score < rhs.score
+                }
+
+                return lhs.index < rhs.index
+            }
+            .map(\.application)
     }
 
     var pinnedApplications: [InstalledApplication] {
@@ -258,35 +269,33 @@ final class StartMenuModel: ObservableObject {
 }
 
 private enum ApplicationSearchMatcher {
-    static func matches(_ application: InstalledApplication, query: String) -> Bool {
-        if application.name.localizedCaseInsensitiveContains(query) {
-            return true
-        }
-
-        if application.bundleIdentifier?.localizedCaseInsensitiveContains(query) == true {
-            return true
-        }
-
+    static func score(_ application: InstalledApplication, query: String) -> Int? {
         let normalizedQuery = normalize(query)
-        guard !normalizedQuery.isEmpty else { return true }
+        guard !normalizedQuery.isEmpty else { return 0 }
 
-        return searchKeys(for: application).contains { key in
-            key.contains(normalizedQuery) || key.isSubsequenceMatch(for: normalizedQuery)
+        var bestScore: Int?
+        for key in searchKeys(for: application) {
+            guard let score = key.score(for: normalizedQuery) else { continue }
+            bestScore = min(bestScore ?? score, score)
         }
+
+        return bestScore
     }
 
-    private static func searchKeys(for application: InstalledApplication) -> [String] {
-        var keys = [
-            normalize(application.name),
-            normalize(application.name, keepingSpaces: true).initials,
-            normalize(application.bundleIdentifier ?? "")
+    private static func searchKeys(for application: InstalledApplication) -> [SearchKey] {
+        var keys: [SearchKey] = [
+            SearchKey(text: normalize(application.name), weight: 0),
+            SearchKey(text: normalize(application.name, keepingSpaces: true), weight: 10),
+            SearchKey(text: normalize(application.name, keepingSpaces: true).initials, weight: 30),
+            SearchKey(text: normalize(application.bundleIdentifier ?? ""), weight: 60)
         ]
 
         let pinyin = pinyinSearchText(for: application.name)
-        keys.append(normalize(pinyin))
-        keys.append(normalize(pinyin, keepingSpaces: true).initials)
+        keys.append(SearchKey(text: normalize(pinyin), weight: 20))
+        keys.append(SearchKey(text: normalize(pinyin, keepingSpaces: true), weight: 25))
+        keys.append(SearchKey(text: normalize(pinyin, keepingSpaces: true).initials, weight: 35))
 
-        return keys.filter { !$0.isEmpty }
+        return keys.filter { !$0.text.isEmpty }
     }
 
     private static func pinyinSearchText(for text: String) -> String {
@@ -316,6 +325,35 @@ private enum ApplicationSearchMatcher {
     }
 }
 
+private struct SearchKey {
+    let text: String
+    let weight: Int
+
+    func score(for query: String) -> Int? {
+        if text == query {
+            return weight
+        }
+
+        if text.hasPrefix(query) {
+            return weight + 1
+        }
+
+        if text.wordInitialsMatch(query) {
+            return weight + 2
+        }
+
+        if let range = text.range(of: query) {
+            return weight + 10 + text.distance(from: text.startIndex, to: range.lowerBound)
+        }
+
+        if text.isSubsequenceMatch(for: query) {
+            return weight + 100
+        }
+
+        return nil
+    }
+}
+
 private extension String {
     var initials: String {
         split(separator: " ")
@@ -336,5 +374,11 @@ private extension String {
         }
 
         return true
+    }
+
+    func wordInitialsMatch(_ query: String) -> Bool {
+        split(separator: " ").contains { word in
+            word.hasPrefix(query)
+        }
     }
 }

@@ -18,20 +18,25 @@ final class StartMenuModel: ObservableObject {
             storage.saveShowsRecommendedSection(showsRecommendedSection)
         }
     }
+    @Published private(set) var applicationSearchDirectories: [URL]
     @Published var hotKeyRegistrationStatus: HotKeyRegistrationStatus = .unknown
     @Published private(set) var searchFocusToken = UUID()
 
-    private let scanner: ApplicationScanner
+    private var scanner: ApplicationScanner
     private let storage: StartMenuStorage
     private var isReloadingApplications = false
 
     init(scanner: ApplicationScanner = ApplicationScanner(), storage: StartMenuStorage = StartMenuStorage()) {
+        var scanner = scanner
+        let applicationSearchDirectoryBookmarks = storage.loadApplicationSearchDirectoryBookmarks()
+        scanner.applicationDirectoryBookmarkData = applicationSearchDirectoryBookmarks
         self.scanner = scanner
         self.storage = storage
         self.pinnedApplicationIDs = storage.loadPinnedIDs()
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
+        self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
     }
 
     var filteredApplications: [InstalledApplication] {
@@ -61,6 +66,58 @@ final class StartMenuModel: ObservableObject {
 
     func reloadApplications() {
         applications = scanner.scan()
+    }
+
+    func addApplicationSearchDirectory() {
+        let panel = NSOpenPanel()
+        panel.title = String(localized: "Add Application Folder")
+        panel.message = String(localized: "Choose a folder that contains applications, such as your Applications folder.")
+        panel.prompt = String(localized: "Add")
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications", isDirectory: true)
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            let bookmarkData = try url.bookmarkData(
+                options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            )
+            var bookmarks = storage.loadApplicationSearchDirectoryBookmarks()
+            let existingURLs = Self.applicationSearchDirectoryURLs(from: bookmarks)
+            guard !existingURLs.contains(where: { $0.standardizedFileURL == url.standardizedFileURL }) else { return }
+
+            bookmarks.append(bookmarkData)
+            saveApplicationSearchDirectoryBookmarks(bookmarks)
+            reloadApplicationsInBackground()
+        } catch {
+            launchError = String.localizedStringWithFormat(
+                String(localized: "Could not add application folder: %@"),
+                error.localizedDescription
+            )
+        }
+    }
+
+    func removeApplicationSearchDirectory(_ directory: URL) {
+        let keptBookmarks = storage.loadApplicationSearchDirectoryBookmarks().filter { bookmarkData in
+            var isStale = false
+            guard let url = try? URL(
+                resolvingBookmarkData: bookmarkData,
+                options: [.withSecurityScope],
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            ), !isStale else {
+                return false
+            }
+
+            return url.standardizedFileURL != directory.standardizedFileURL
+        }
+
+        saveApplicationSearchDirectoryBookmarks(keptBookmarks)
+        reloadApplicationsInBackground()
     }
 
     func reloadApplicationsInBackground() {
@@ -176,5 +233,27 @@ final class StartMenuModel: ObservableObject {
         recentApplicationIDs.insert(application.id, at: 0)
         recentApplicationIDs = Array(recentApplicationIDs.prefix(8))
         storage.saveRecentIDs(recentApplicationIDs)
+    }
+
+    private func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
+        storage.saveApplicationSearchDirectoryBookmarks(bookmarks)
+        scanner.applicationDirectoryBookmarkData = bookmarks
+        applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: bookmarks)
+    }
+
+    private static func applicationSearchDirectoryURLs(from bookmarks: [Data]) -> [URL] {
+        bookmarks.compactMap { bookmarkData in
+            var isStale = false
+            guard let url = try? URL(
+                resolvingBookmarkData: bookmarkData,
+                options: [.withSecurityScope],
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            ), !isStale else {
+                return nil
+            }
+
+            return url
+        }
     }
 }

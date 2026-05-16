@@ -29,6 +29,41 @@ struct SettingsView: View {
                     }
                 }
 
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Additional application folders")
+                        Spacer()
+                        Button("Add Folder") {
+                            model.addApplicationSearchDirectory()
+                        }
+                    }
+
+                    if model.applicationSearchDirectories.isEmpty {
+                        Text("Add your user Applications folder to index Chrome PWA apps in sandbox mode.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        ForEach(model.applicationSearchDirectories, id: \.standardizedFileURL) { directory in
+                            HStack(spacing: 8) {
+                                Image(systemName: "folder")
+                                    .foregroundStyle(.secondary)
+                                Text(verbatim: directory.path)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                Spacer()
+                                Button {
+                                    model.removeApplicationSearchDirectory(directory)
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                }
+                                .buttonStyle(.borderless)
+                                .help(Text("Remove Folder"))
+                            }
+                        }
+                    }
+                }
+
                 Button("Clear pinned apps") {
                     model.pinnedApplicationIDs.removeAll()
                     StartMenuStorage().savePinnedIDs([])

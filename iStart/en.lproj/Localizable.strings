@@ -1,11 +1,18 @@
 "All apps" = "All apps";
 "Applications" = "Applications";
+"Add" = "Add";
+"Add Application Folder" = "Add Application Folder";
+"Add Folder" = "Add Folder";
+"Add your user Applications folder to index Chrome PWA apps in sandbox mode." = "Add your user Applications folder to index Chrome PWA apps in sandbox mode.";
+"Additional application folders" = "Additional application folders";
 "Back" = "Back";
 "Best match" = "Best match";
 "Clear pinned apps" = "Clear pinned apps";
 "Command Option Space" = "Command Option Space";
 "Command Space" = "Command Space";
 "Control Space" = "Control Space";
+"Choose a folder that contains applications, such as your Applications folder." = "Choose a folder that contains applications, such as your Applications folder.";
+"Could not add application folder: %@" = "Could not add application folder: %@";
 "Global shortcut is active." = "Global shortcut is active.";
 "Hot key has not been registered yet." = "Hot key has not been registered yet.";
 "Launched apps will appear here." = "Launched apps will appear here.";
@@ -18,6 +25,7 @@
 "Recently opened" = "Recently opened";
 "Recommended" = "Recommended";
 "Reload" = "Reload";
+"Remove Folder" = "Remove Folder";
 "Search for apps, settings, and documents" = "Search for apps, settings, and documents";
 "Settings" = "Settings";
 "Show recommended section" = "Show recommended section";

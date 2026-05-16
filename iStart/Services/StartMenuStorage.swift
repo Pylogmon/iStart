@@ -8,6 +8,7 @@ struct StartMenuStorage {
         static let recentApplicationIDs = "recentApplicationIDs"
         static let hotKey = "hotKey"
         static let showsRecommendedSection = "showsRecommendedSection"
+        static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -48,5 +49,13 @@ struct StartMenuStorage {
 
     func saveHotKey(_ hotKey: HotKey) {
         defaults.set(hotKey.rawValue, forKey: Keys.hotKey)
+    }
+
+    func loadApplicationSearchDirectoryBookmarks() -> [Data] {
+        defaults.array(forKey: Keys.applicationSearchDirectoryBookmarks) as? [Data] ?? []
+    }
+
+    func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
+        defaults.set(bookmarks, forKey: Keys.applicationSearchDirectoryBookmarks)
     }
 }

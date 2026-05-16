@@ -1,11 +1,18 @@
 "All apps" = "所有应用";
 "Applications" = "应用程序";
+"Add" = "添加";
+"Add Application Folder" = "添加应用文件夹";
+"Add Folder" = "添加文件夹";
+"Add your user Applications folder to index Chrome PWA apps in sandbox mode." = "添加用户目录下的 Applications 文件夹，以便在沙盒模式下索引 Chrome PWA 应用。";
+"Additional application folders" = "额外应用文件夹";
 "Back" = "返回";
 "Best match" = "最佳匹配";
 "Clear pinned apps" = "清空固定应用";
 "Command Option Space" = "Command Option 空格";
 "Command Space" = "Command 空格";
 "Control Space" = "Control 空格";
+"Choose a folder that contains applications, such as your Applications folder." = "选择包含应用的文件夹，例如你的 Applications 文件夹。";
+"Could not add application folder: %@" = "无法添加应用文件夹：%@";
 "Global shortcut is active." = "全局快捷键已启用。";
 "Hot key has not been registered yet." = "快捷键尚未注册。";
 "Launched apps will appear here." = "启动过的应用会显示在这里。";
@@ -18,6 +25,7 @@
 "Recently opened" = "最近打开";
 "Recommended" = "推荐";
 "Reload" = "重新加载";
+"Remove Folder" = "移除文件夹";
 "Search for apps, settings, and documents" = "搜索应用、设置和文档";
 "Settings" = "设置";
 "Show recommended section" = "显示推荐区域";

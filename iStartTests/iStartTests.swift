@@ -29,6 +29,27 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func scannerFindsChromePWAApplicationsInNestedUserApplicationsFolder() throws {
+        let root = try temporaryDirectory()
+        let chromeApps = root
+            .appendingPathComponent("Applications", isDirectory: true)
+            .appendingPathComponent("Chrome Apps.localized", isDirectory: true)
+        try makeApp(
+            named: "Photo Border",
+            bundleIdentifier: "com.google.Chrome.app.oighanpbhfmkphmfibgddmaniojoaelb",
+            in: chromeApps,
+            includesDisplayName: false,
+            extraInfo: ["CrAppModeShortcutName": "浮光水印"]
+        )
+
+        let scanner = ApplicationScanner(searchRoots: [root.appendingPathComponent("Applications", isDirectory: true)])
+        let apps = scanner.scan()
+
+        #expect(apps.map(\.name) == ["浮光水印"])
+        #expect(apps.map(\.bundleIdentifier) == ["com.google.Chrome.app.oighanpbhfmkphmfibgddmaniojoaelb"])
+    }
+
+    @MainActor
     @Test func modelFiltersByNameAndBundleIdentifier() throws {
         let root = try temporaryDirectory()
         try makeApp(named: "Pixelmator Pro", bundleIdentifier: "com.pixelmatorteam.pixelmator.x", in: root)
@@ -73,18 +94,28 @@ struct iStartTests {
         #expect(storage.loadHotKey() == .commandOptionSpace)
     }
 
-    private func makeApp(named name: String, bundleIdentifier: String, in root: URL) throws {
+    private func makeApp(
+        named name: String,
+        bundleIdentifier: String,
+        in root: URL,
+        includesDisplayName: Bool = true,
+        extraInfo: [String: Any] = [:]
+    ) throws {
         let appURL = root.appendingPathComponent("\(name).app", isDirectory: true)
         let contentsURL = appURL.appendingPathComponent("Contents", isDirectory: true)
         try FileManager.default.createDirectory(at: contentsURL, withIntermediateDirectories: true)
 
-        let plist: NSDictionary = [
+        var info: [String: Any] = [
             "CFBundleIdentifier": bundleIdentifier,
             "CFBundleName": name,
-            "CFBundleDisplayName": name,
             "CFBundlePackageType": "APPL"
         ]
-        _ = plist.write(to: contentsURL.appendingPathComponent("Info.plist"), atomically: true)
+        if includesDisplayName {
+            info["CFBundleDisplayName"] = name
+        }
+        info.merge(extraInfo) { _, new in new }
+
+        _ = (info as NSDictionary).write(to: contentsURL.appendingPathComponent("Info.plist"), atomically: true)
     }
 
     private func temporaryDirectory() throws -> URL {

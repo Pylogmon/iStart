@@ -69,6 +69,7 @@ private struct GeneralSettingsPane: View {
 
 private struct ApplicationSettingsPane: View {
     @ObservedObject var model: StartMenuModel
+    @State private var isResetPinnedAppsConfirmationPresented = false
 
     var body: some View {
         Form {
@@ -138,8 +139,7 @@ private struct ApplicationSettingsPane: View {
 
             Section {
                 Button("Reset Pinned Apps", role: .destructive) {
-                    model.pinnedApplicationIDs.removeAll()
-                    StartMenuStorage().savePinnedIDs([])
+                    isResetPinnedAppsConfirmationPresented = true
                 }
             }
             header: {
@@ -152,6 +152,23 @@ private struct ApplicationSettingsPane: View {
         .formStyle(.grouped)
         .padding(.horizontal, 24)
         .padding(.vertical, 18)
+        .confirmationDialog(
+            "Reset Pinned Apps?",
+            isPresented: $isResetPinnedAppsConfirmationPresented
+        ) {
+            Button("Reset Pinned Apps", role: .destructive) {
+                resetPinnedApps()
+            }
+
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This removes your pinned app choices and restores the default pinned apps.")
+        }
+    }
+
+    private func resetPinnedApps() {
+        model.pinnedApplicationIDs.removeAll()
+        StartMenuStorage().savePinnedIDs([])
     }
 }
 

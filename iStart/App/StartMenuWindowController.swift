@@ -50,6 +50,7 @@ final class StartMenuWindowController {
     }
 
     func showAndFocusSearch() {
+        model.reloadApplicationsInBackground()
         let targetFrame = targetPanelFrame()
         panel.setFrame(startingFrame(for: targetFrame), display: true)
         panel.alphaValue = 0

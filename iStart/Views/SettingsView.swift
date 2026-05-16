@@ -25,7 +25,7 @@ struct SettingsView: View {
                     Text(String.localizedStringWithFormat(String(localized: "%lld apps indexed"), model.applications.count))
                     Spacer()
                     Button("Reload") {
-                        model.reloadApplications()
+                        model.reloadApplicationsInBackground()
                     }
                 }
 

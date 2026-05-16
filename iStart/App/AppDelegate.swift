@@ -21,7 +21,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.windowController = StartMenuWindowController(model: model)
             self.installHotKeyHandler()
             self.registerCurrentHotKey()
-            model.reloadApplications()
             self.windowController?.showAndFocusSearch()
         }
     }

@@ -23,6 +23,7 @@ final class StartMenuModel: ObservableObject {
 
     private let scanner: ApplicationScanner
     private let storage: StartMenuStorage
+    private var isReloadingApplications = false
 
     init(scanner: ApplicationScanner = ApplicationScanner(), storage: StartMenuStorage = StartMenuStorage()) {
         self.scanner = scanner
@@ -60,6 +61,29 @@ final class StartMenuModel: ObservableObject {
 
     func reloadApplications() {
         applications = scanner.scan()
+    }
+
+    func reloadApplicationsInBackground() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.reloadApplicationsInBackground()
+            }
+            return
+        }
+
+        guard !isReloadingApplications else { return }
+        isReloadingApplications = true
+
+        let scanner = scanner
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let applications = scanner.scan()
+
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.applications = applications
+                self.isReloadingApplications = false
+            }
+        }
     }
 
     func focusSearch() {

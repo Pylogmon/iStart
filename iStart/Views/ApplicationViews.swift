@@ -33,6 +33,7 @@ struct ApplicationTile: View {
 struct SearchResultRow: View {
     let application: InstalledApplication
     let isPinned: Bool
+    let isSelected: Bool
     let onLaunch: () -> Void
     let onTogglePinned: () -> Void
 
@@ -56,16 +57,26 @@ struct SearchResultRow: View {
 
                 Image(systemName: isPinned ? "pin.fill" : "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
             }
             .padding(.horizontal, 12)
             .frame(height: 54)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background(rowBackground)
+            .overlay {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isSelected ? Color.accentColor.opacity(0.55) : Color.clear, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
         .contextMenu {
             Button(isPinned ? String(localized: "Unpin from Start") : String(localized: "Pin to Start"), action: onTogglePinned)
         }
+    }
+
+    private var rowBackground: some View {
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 

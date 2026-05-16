@@ -6,10 +6,14 @@ struct StartMenuView: View {
     @ObservedObject var model: StartMenuModel
     @State private var showsAllApps = false
     @State private var draggedPinnedApplication: InstalledApplication?
+    @State private var selectedSearchResultID: String?
     @Environment(\.openSettings) private var openSettings
     @FocusState private var searchFocused: Bool
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
+    private var searchResults: [InstalledApplication] {
+        Array(model.filteredApplications.prefix(80))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,6 +52,21 @@ struct StartMenuView: View {
         .onChange(of: model.searchFocusToken) {
             searchFocused = true
         }
+        .onChange(of: model.searchText) {
+            selectFirstSearchResult()
+        }
+        .onChange(of: model.applications) {
+            validateSelectedSearchResult()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .startMenuMoveSelectionDown)) { _ in
+            moveSearchSelection(by: 1)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .startMenuMoveSelectionUp)) { _ in
+            moveSearchSelection(by: -1)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .startMenuOpenSelection)) { _ in
+            openSelectedSearchResult()
+        }
     }
 
     private var searchField: some View {
@@ -61,9 +80,7 @@ struct StartMenuView: View {
                 .focused($searchFocused)
                 .font(.system(size: 15))
                 .onSubmit {
-                    if let first = model.filteredApplications.first {
-                        launch(first)
-                    }
+                    openSelectedSearchResult()
                 }
         }
         .padding(.horizontal, 16)
@@ -153,19 +170,32 @@ struct StartMenuView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionHeader(title: String(localized: "Best match"), trailing: String.localizedStringWithFormat(String(localized: "%lld results"), model.filteredApplications.count))
 
-            ScrollView {
-                LazyVStack(spacing: 6) {
-                    ForEach(model.filteredApplications.prefix(80)) { application in
-                        SearchResultRow(application: application, isPinned: model.isPinned(application)) {
-                            launch(application)
-                        } onTogglePinned: {
-                            model.togglePinned(application)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: 6) {
+                        ForEach(searchResults) { application in
+                            SearchResultRow(
+                                application: application,
+                                isPinned: model.isPinned(application),
+                                isSelected: selectedSearchResultID == application.id
+                            ) {
+                                launch(application)
+                            } onTogglePinned: {
+                                model.togglePinned(application)
+                            }
+                            .id(application.id)
                         }
                     }
+                    .padding(.vertical, 2)
                 }
-                .padding(.vertical, 2)
+                .frame(maxHeight: 565)
+                .onChange(of: selectedSearchResultID) {
+                    guard let selectedSearchResultID else { return }
+                    withAnimation(.easeInOut(duration: 0.12)) {
+                        proxy.scrollTo(selectedSearchResultID, anchor: .center)
+                    }
+                }
             }
-            .frame(maxHeight: 565)
         }
     }
 
@@ -178,7 +208,7 @@ struct StartMenuView: View {
             ScrollView {
                 LazyVStack(spacing: 6) {
                     ForEach(model.applications) { application in
-                        SearchResultRow(application: application, isPinned: model.isPinned(application)) {
+                        SearchResultRow(application: application, isPinned: model.isPinned(application), isSelected: false) {
                             launch(application)
                         } onTogglePinned: {
                             model.togglePinned(application)
@@ -241,6 +271,61 @@ struct StartMenuView: View {
 
     private func launch(_ application: InstalledApplication) {
         model.launch(application)
+    }
+
+    private func selectFirstSearchResult() {
+        guard isSearching else {
+            selectedSearchResultID = nil
+            return
+        }
+
+        selectedSearchResultID = searchResults.first?.id
+    }
+
+    private func validateSelectedSearchResult() {
+        guard isSearching else {
+            selectedSearchResultID = nil
+            return
+        }
+
+        if let selectedSearchResultID,
+           searchResults.contains(where: { $0.id == selectedSearchResultID }) {
+            return
+        }
+
+        selectedSearchResultID = searchResults.first?.id
+    }
+
+    private func moveSearchSelection(by offset: Int) {
+        guard isSearching, !searchResults.isEmpty else { return }
+
+        guard let currentID = selectedSearchResultID,
+              let currentIndex = searchResults.firstIndex(where: { $0.id == currentID })
+        else {
+            selectedSearchResultID = searchResults.first?.id
+            return
+        }
+
+        let nextIndex = min(max(currentIndex + offset, 0), searchResults.count - 1)
+        selectedSearchResultID = searchResults[nextIndex].id
+    }
+
+    private func openSelectedSearchResult() {
+        guard isSearching else { return }
+
+        guard let application = selectedSearchResultID.flatMap(applicationForSearchResultID) ?? searchResults.first else {
+            return
+        }
+
+        launch(application)
+    }
+
+    private func applicationForSearchResultID(_ id: String) -> InstalledApplication? {
+        searchResults.first { $0.id == id }
+    }
+
+    private var isSearching: Bool {
+        !model.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 

@@ -119,12 +119,34 @@ final class StartMenuPanel: NSPanel {
     override var canBecomeMain: Bool { true }
 
     override func sendEvent(_ event: NSEvent) {
-        if event.type == .keyDown, event.keyCode == UInt16(kVK_Escape) {
-            onShouldHide?()
-            return
+        if event.type == .keyDown, !isHandlingMarkedTextInput {
+            switch Int(event.keyCode) {
+            case kVK_Escape:
+                onShouldHide?()
+                return
+            case kVK_DownArrow:
+                NotificationCenter.default.post(name: .startMenuMoveSelectionDown, object: nil)
+                return
+            case kVK_UpArrow:
+                NotificationCenter.default.post(name: .startMenuMoveSelectionUp, object: nil)
+                return
+            case kVK_Return, kVK_ANSI_KeypadEnter:
+                NotificationCenter.default.post(name: .startMenuOpenSelection, object: nil)
+                return
+            default:
+                break
+            }
         }
 
         super.sendEvent(event)
+    }
+
+    private var isHandlingMarkedTextInput: Bool {
+        guard let textInputClient = firstResponder as? NSTextInputClient else {
+            return false
+        }
+
+        return textInputClient.hasMarkedText()
     }
 
     override func resignKey() {

@@ -84,33 +84,6 @@ func drawShadowedRoundedRect(
     context.restoreGState()
 }
 
-func drawTile(in context: CGContext, rect: CGRect, radius: CGFloat, colors: [CGColor]) {
-    drawShadowedRoundedRect(
-        in: context,
-        rect: rect,
-        radius: radius,
-        fill: color(0xffffff, alpha: 0.16),
-        shadowColor: color(0x0a1630, alpha: 0.16),
-        shadowBlur: rect.width * 0.18,
-        shadowOffset: CGSize(width: 0, height: rect.width * 0.08)
-    )
-    drawRoundedGradient(
-        in: context,
-        rect: rect,
-        radius: radius,
-        colors: colors,
-        locations: [0, 1],
-        start: CGPoint(x: rect.minX, y: rect.maxY),
-        end: CGPoint(x: rect.maxX, y: rect.minY)
-    )
-    context.saveGState()
-    context.addPath(path(rounded: rect.insetBy(dx: rect.width * 0.08, dy: rect.width * 0.08), radius: radius * 0.72))
-    context.setStrokeColor(color(0xffffff, alpha: 0.22))
-    context.setLineWidth(max(1, rect.width * 0.035))
-    context.strokePath()
-    context.restoreGState()
-}
-
 func drawIcon(pixels: Int) -> NSBitmapImageRep {
     guard
         let bitmap = NSBitmapImageRep(
@@ -144,107 +117,78 @@ func drawIcon(pixels: Int) -> NSBitmapImageRep {
     let canvas = CGRect(x: 0, y: 0, width: pixels, height: pixels)
     context.clear(canvas)
 
-    let plate = r(78, 78, 868, 868)
+    let plate = r(88, 88, 848, 848)
     drawShadowedRoundedRect(
         in: context,
         rect: plate,
-        radius: s(210),
-        fill: color(0x123c7c),
+        radius: s(196),
+        fill: color(0x123b7a),
         shadowColor: color(0x00102a, alpha: 0.34),
-        shadowBlur: s(38),
-        shadowOffset: CGSize(width: 0, height: -s(16))
+        shadowBlur: s(34),
+        shadowOffset: CGSize(width: 0, height: -s(14))
     )
 
     context.saveGState()
-    context.addPath(path(rounded: plate, radius: s(210)))
+    context.addPath(path(rounded: plate, radius: s(196)))
     context.clip()
     drawLinearGradient(
         in: context,
         rect: plate,
-        colors: [color(0x8ee7ff), color(0x2f8eff), color(0x1842a2), color(0x0b215e)],
-        locations: [0.0, 0.38, 0.72, 1.0],
-        start: CGPoint(x: plate.minX + s(30), y: plate.maxY - s(20)),
-        end: CGPoint(x: plate.maxX - s(70), y: plate.minY + s(50))
+        colors: [color(0x72d9ff), color(0x2c8dff), color(0x17459d)],
+        locations: [0.0, 0.46, 1.0],
+        start: CGPoint(x: plate.minX + s(70), y: plate.maxY - s(42)),
+        end: CGPoint(x: plate.maxX - s(86), y: plate.minY + s(70))
     )
 
     let glowSpace = CGColorSpaceCreateDeviceRGB()
     if let glow = CGGradient(
         colorsSpace: glowSpace,
-        colors: [color(0xffffff, alpha: 0.42), color(0xffffff, alpha: 0.0)] as CFArray,
+        colors: [color(0xffffff, alpha: 0.34), color(0xffffff, alpha: 0.0)] as CFArray,
         locations: [0, 1]
     ) {
         context.drawRadialGradient(
             glow,
-            startCenter: CGPoint(x: s(350), y: s(720)),
+            startCenter: CGPoint(x: s(310), y: s(770)),
             startRadius: 0,
-            endCenter: CGPoint(x: s(350), y: s(720)),
-            endRadius: s(470),
+            endCenter: CGPoint(x: s(310), y: s(770)),
+            endRadius: s(420),
             options: []
         )
     }
     context.restoreGState()
 
-    let tilePalette: [[CGColor]] = [
-        [color(0xff6b8a), color(0xffb84e)],
-        [color(0x5df0c6), color(0x2fa9ff)],
-        [color(0xf8ec68), color(0xff8a44)],
-        [color(0xb990ff), color(0x4e68ff)],
-        [color(0x6df07d), color(0x17a7a8)],
-        [color(0xff83d8), color(0x8565ff)]
-    ]
-    let tileRects = [
-        r(238, 682, 126, 126),
-        r(449, 706, 104, 104),
-        r(649, 642, 134, 134),
-        r(210, 458, 110, 110),
-        r(704, 430, 116, 116),
-        r(492, 206, 126, 126)
-    ]
-    for (index, rect) in tileRects.enumerated() {
-        drawTile(in: context, rect: rect, radius: s(28), colors: tilePalette[index])
-    }
-
-    let menu = r(292, 294, 440, 440)
+    let menu = r(266, 266, 492, 492)
     drawShadowedRoundedRect(
         in: context,
         rect: menu,
-        radius: s(112),
-        fill: color(0x0a1a42, alpha: 0.44),
-        shadowColor: color(0x00102a, alpha: 0.38),
-        shadowBlur: s(42),
-        shadowOffset: CGSize(width: 0, height: -s(14))
-    )
-    drawRoundedGradient(
-        in: context,
-        rect: menu,
-        radius: s(112),
-        colors: [color(0xffffff, alpha: 0.92), color(0xccefff, alpha: 0.86), color(0x80c6ff, alpha: 0.82)],
-        locations: [0, 0.44, 1],
-        start: CGPoint(x: menu.minX, y: menu.maxY),
-        end: CGPoint(x: menu.maxX, y: menu.minY)
+        radius: s(118),
+        fill: color(0xffffff, alpha: 0.2),
+        shadowColor: color(0x00102a, alpha: 0.3),
+        shadowBlur: s(34),
+        shadowOffset: CGSize(width: 0, height: -s(10))
     )
 
     context.saveGState()
-    context.addPath(path(rounded: menu.insetBy(dx: s(22), dy: s(22)), radius: s(88)))
-    context.setStrokeColor(color(0xffffff, alpha: 0.7))
-    context.setLineWidth(s(9))
-    context.strokePath()
+    context.addPath(path(rounded: menu, radius: s(118)))
+    context.clip()
+    drawLinearGradient(
+        in: context,
+        rect: menu,
+        colors: [color(0xffffff, alpha: 0.9), color(0xd7f5ff, alpha: 0.78)],
+        locations: [0, 1],
+        start: CGPoint(x: menu.minX, y: menu.maxY),
+        end: CGPoint(x: menu.maxX, y: menu.minY)
+    )
     context.restoreGState()
 
-    let paneGap = s(24)
-    let paneSize = (menu.width - s(118) - paneGap) / 2
-    let paneStartX = menu.minX + s(47)
-    let paneStartY = menu.minY + s(47)
-    let paneColors = [
-        [color(0x36d6ff), color(0x2276ff)],
-        [color(0x6be7ff), color(0x3fa8ff)],
-        [color(0x2aa9ff), color(0x1556d1)],
-        [color(0x77f3ff), color(0x2e83ff)]
-    ]
+    let paneGap = s(30)
+    let paneSize = (menu.width - s(136) - paneGap) / 2
+    let paneGridWidth = paneSize * 2 + paneGap
+    let paneStartX = menu.midX - paneGridWidth / 2
+    let paneStartY = menu.minY + s(68)
 
     for row in 0..<2 {
         for column in 0..<2 {
-            let index = row * 2 + column
             let rect = CGRect(
                 x: paneStartX + CGFloat(column) * (paneSize + paneGap),
                 y: paneStartY + CGFloat(row) * (paneSize + paneGap),
@@ -254,8 +198,8 @@ func drawIcon(pixels: Int) -> NSBitmapImageRep {
             drawRoundedGradient(
                 in: context,
                 rect: rect,
-                radius: s(32),
-                colors: paneColors[index],
+                radius: s(34),
+                colors: [color(0x39ccff), color(0x1976ee)],
                 locations: [0, 1],
                 start: CGPoint(x: rect.minX, y: rect.maxY),
                 end: CGPoint(x: rect.maxX, y: rect.minY)
@@ -263,21 +207,10 @@ func drawIcon(pixels: Int) -> NSBitmapImageRep {
         }
     }
 
-    let lowerBar = r(376, 252, 272, 36)
-    drawRoundedGradient(
-        in: context,
-        rect: lowerBar,
-        radius: s(18),
-        colors: [color(0xffffff, alpha: 0.62), color(0xb9e8ff, alpha: 0.42)],
-        locations: [0, 1],
-        start: CGPoint(x: lowerBar.minX, y: lowerBar.maxY),
-        end: CGPoint(x: lowerBar.maxX, y: lowerBar.minY)
-    )
-
     context.saveGState()
-    context.addPath(path(rounded: plate.insetBy(dx: s(9), dy: s(9)), radius: s(198)))
+    context.addPath(path(rounded: plate.insetBy(dx: s(10), dy: s(10)), radius: s(184)))
     context.setStrokeColor(color(0xffffff, alpha: 0.24))
-    context.setLineWidth(s(10))
+    context.setLineWidth(s(8))
     context.strokePath()
     context.restoreGState()
 

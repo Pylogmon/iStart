@@ -52,7 +52,7 @@ struct ApplicationScanner {
 }
 
 private enum AppNameResolver {
-    static func displayName(for url: URL, bundle: Bundle?) -> String {
+    nonisolated static func displayName(for url: URL, bundle: Bundle?) -> String {
         let candidates = [
             localizedInfoValue("CFBundleDisplayName", in: bundle),
             localizedInfoValue("CFBundleName", in: bundle),
@@ -70,11 +70,11 @@ private enum AppNameResolver {
             ?? url.deletingPathExtension().lastPathComponent
     }
 
-    private static func localizedInfoValue(_ key: String, in bundle: Bundle?) -> String? {
+    nonisolated private static func localizedInfoValue(_ key: String, in bundle: Bundle?) -> String? {
         bundle?.localizedInfoDictionary?[key] as? String
     }
 
-    private static func stripApplicationExtension(_ name: String) -> String {
+    nonisolated private static func stripApplicationExtension(_ name: String) -> String {
         let extensions = [".app", ".APP"]
         for suffix in extensions where name.hasSuffix(suffix) {
             return String(name.dropLast(suffix.count))

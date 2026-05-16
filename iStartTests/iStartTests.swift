@@ -50,6 +50,26 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func scannerPrefersLocalizedChineseApplicationDisplayName() throws {
+        let root = try temporaryDirectory()
+        try makeApp(
+            named: "WeChat",
+            bundleIdentifier: "com.tencent.xinWeChat",
+            in: root,
+            localizedInfo: [
+                "zh-Hans": [
+                    "CFBundleDisplayName": "微信"
+                ]
+            ]
+        )
+
+        let scanner = ApplicationScanner(searchRoots: [root])
+        let apps = scanner.scan()
+
+        #expect(apps.map(\.name) == ["微信"])
+    }
+
+    @MainActor
     @Test func modelFiltersByNameAndBundleIdentifier() throws {
         let root = try temporaryDirectory()
         try makeApp(named: "Pixelmator Pro", bundleIdentifier: "com.pixelmatorteam.pixelmator.x", in: root)
@@ -63,6 +83,35 @@ struct iStartTests {
 
         model.searchText = "apple.Terminal"
         #expect(model.filteredApplications.map(\.name) == ["Terminal"])
+    }
+
+    @MainActor
+    @Test func modelFiltersChineseApplicationNamesByPinyin() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "微信", bundleIdentifier: "com.tencent.xinWeChat", in: root)
+        try makeApp(named: "备忘录", bundleIdentifier: "com.apple.Notes", in: root)
+
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        model.reloadApplications()
+
+        model.searchText = "weixin"
+        #expect(model.filteredApplications.map(\.name) == ["微信"])
+
+        model.searchText = "wx"
+        #expect(model.filteredApplications.map(\.name) == ["微信"])
+    }
+
+    @MainActor
+    @Test func modelFiltersApplicationNamesByFuzzyInitials() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Visual Studio Code", bundleIdentifier: "com.microsoft.VSCode", in: root)
+        try makeApp(named: "Calendar", bundleIdentifier: "com.example.calendar", in: root)
+
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        model.reloadApplications()
+
+        model.searchText = "vsc"
+        #expect(model.filteredApplications.map(\.name) == ["Visual Studio Code"])
     }
 
     @MainActor
@@ -99,7 +148,8 @@ struct iStartTests {
         bundleIdentifier: String,
         in root: URL,
         includesDisplayName: Bool = true,
-        extraInfo: [String: Any] = [:]
+        extraInfo: [String: Any] = [:],
+        localizedInfo: [String: [String: String]] = [:]
     ) throws {
         let appURL = root.appendingPathComponent("\(name).app", isDirectory: true)
         let contentsURL = appURL.appendingPathComponent("Contents", isDirectory: true)
@@ -116,6 +166,16 @@ struct iStartTests {
         info.merge(extraInfo) { _, new in new }
 
         _ = (info as NSDictionary).write(to: contentsURL.appendingPathComponent("Info.plist"), atomically: true)
+
+        let resourcesURL = contentsURL.appendingPathComponent("Resources", isDirectory: true)
+        for (localization, strings) in localizedInfo {
+            let localizationURL = resourcesURL.appendingPathComponent("\(localization).lproj", isDirectory: true)
+            try FileManager.default.createDirectory(at: localizationURL, withIntermediateDirectories: true)
+            _ = (strings as NSDictionary).write(
+                to: localizationURL.appendingPathComponent("InfoPlist.strings"),
+                atomically: true
+            )
+        }
     }
 
     private func temporaryDirectory() throws -> URL {

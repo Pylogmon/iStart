@@ -44,8 +44,7 @@ final class StartMenuModel: ObservableObject {
         guard !query.isEmpty else { return applications }
 
         return applications.filter { application in
-            application.name.localizedCaseInsensitiveContains(query)
-                || application.bundleIdentifier?.localizedCaseInsensitiveContains(query) == true
+            ApplicationSearchMatcher.matches(application, query: query)
         }
     }
 
@@ -255,5 +254,87 @@ final class StartMenuModel: ObservableObject {
 
             return url
         }
+    }
+}
+
+private enum ApplicationSearchMatcher {
+    static func matches(_ application: InstalledApplication, query: String) -> Bool {
+        if application.name.localizedCaseInsensitiveContains(query) {
+            return true
+        }
+
+        if application.bundleIdentifier?.localizedCaseInsensitiveContains(query) == true {
+            return true
+        }
+
+        let normalizedQuery = normalize(query)
+        guard !normalizedQuery.isEmpty else { return true }
+
+        return searchKeys(for: application).contains { key in
+            key.contains(normalizedQuery) || key.isSubsequenceMatch(for: normalizedQuery)
+        }
+    }
+
+    private static func searchKeys(for application: InstalledApplication) -> [String] {
+        var keys = [
+            normalize(application.name),
+            normalize(application.name, keepingSpaces: true).initials,
+            normalize(application.bundleIdentifier ?? "")
+        ]
+
+        let pinyin = pinyinSearchText(for: application.name)
+        keys.append(normalize(pinyin))
+        keys.append(normalize(pinyin, keepingSpaces: true).initials)
+
+        return keys.filter { !$0.isEmpty }
+    }
+
+    private static func pinyinSearchText(for text: String) -> String {
+        text
+            .applyingTransform(.mandarinToLatin, reverse: false)?
+            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+            ?? text
+    }
+
+    private static func normalize(_ text: String, keepingSpaces: Bool = false) -> String {
+        let folded = text.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: .current)
+        let allowed = folded.unicodeScalars.map { scalar -> Character in
+            if CharacterSet.alphanumerics.contains(scalar) {
+                return Character(scalar)
+            }
+
+            return keepingSpaces ? " " : "\0"
+        }
+
+        let normalized = String(allowed)
+            .replacingOccurrences(of: "\0", with: "")
+
+        guard keepingSpaces else { return normalized }
+        return normalized
+            .split(separator: " ")
+            .joined(separator: " ")
+    }
+}
+
+private extension String {
+    var initials: String {
+        split(separator: " ")
+            .compactMap(\.first)
+            .map(String.init)
+            .joined()
+    }
+
+    func isSubsequenceMatch(for query: String) -> Bool {
+        var currentIndex = startIndex
+
+        for character in query {
+            guard let matchIndex = self[currentIndex...].firstIndex(of: character) else {
+                return false
+            }
+
+            currentIndex = index(after: matchIndex)
+        }
+
+        return true
     }
 }

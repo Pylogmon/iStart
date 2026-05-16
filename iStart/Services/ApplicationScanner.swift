@@ -161,10 +161,10 @@ private enum AppNameResolver {
             localizedInfo["CFBundleDisplayName"],
             info["CrAppModeShortcutName"] as? String,
             localizedInfo["CFBundleName"],
+            (try? url.resourceValues(forKeys: [.localizedNameKey]).localizedName),
+            FileManager.default.displayName(atPath: url.path),
             info["CFBundleDisplayName"] as? String,
             info["CFBundleName"] as? String,
-            FileManager.default.displayName(atPath: url.path),
-            (try? url.resourceValues(forKeys: [.localizedNameKey]).localizedName),
             url.deletingPathExtension().lastPathComponent
         ]
 

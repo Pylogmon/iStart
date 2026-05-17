@@ -60,10 +60,41 @@ private struct GeneralSettingsPane: View {
             footer: {
                 Text("When turned off, iStart opens to the home view every time.")
             }
+
+            Section {
+                Toggle("Open at Login", isOn: launchesAtLogin)
+
+                if let message = model.loginItemStatus.message {
+                    Label(message, systemImage: "exclamationmark.circle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let error = model.loginItemError {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            header: {
+                Text("Login")
+            }
+            footer: {
+                Text("When iStart opens at login, it runs in the background without showing the Start menu.")
+            }
         }
         .formStyle(.grouped)
         .padding(.horizontal, 24)
         .padding(.vertical, 18)
+    }
+
+    private var launchesAtLogin: Binding<Bool> {
+        Binding {
+            model.launchesAtLogin
+        } set: { launchesAtLogin in
+            model.setLaunchesAtLogin(launchesAtLogin)
+        }
     }
 }
 

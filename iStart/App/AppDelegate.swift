@@ -21,7 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.windowController = StartMenuWindowController(model: model)
             self.installHotKeyHandler()
             self.registerCurrentHotKey()
-            self.windowController?.showAndFocusSearch()
+            self.presentInitialStartMenuIfNeeded()
         }
     }
 
@@ -79,6 +79,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let controller = StartMenuWindowController(model: resolveModel())
         windowController = controller
         return controller
+    }
+
+    private func presentInitialStartMenuIfNeeded() {
+        let model = resolveModel()
+        model.refreshLoginItemStatus()
+
+        if wasLaunchedAsLoginItem {
+            model.reloadApplicationsInBackground()
+            return
+        }
+
+        resolveWindowController().showAndFocusSearch()
+    }
+
+    private var wasLaunchedAsLoginItem: Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent else { return false }
+
+        return event.eventID == kAEOpenApplication
+            && event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
     }
 
     private func installHotKeyHandler() {

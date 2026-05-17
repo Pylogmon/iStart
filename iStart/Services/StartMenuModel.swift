@@ -23,6 +23,8 @@ final class StartMenuModel: ObservableObject {
             storage.saveRestoresStartMenuState(restoresStartMenuState)
         }
     }
+    @Published private(set) var loginItemStatus: LoginItemStatus
+    @Published var loginItemError: String?
     @Published private(set) var applicationSearchDirectories: [URL]
     @Published var hotKeyRegistrationStatus: HotKeyRegistrationStatus = .unknown
     @Published private(set) var searchFocusToken = UUID()
@@ -30,19 +32,26 @@ final class StartMenuModel: ObservableObject {
 
     private var scanner: ApplicationScanner
     private let storage: StartMenuStorage
+    private let loginItemManager: LoginItemManaging
     private var isReloadingApplications = false
 
-    init(scanner: ApplicationScanner = ApplicationScanner(), storage: StartMenuStorage = StartMenuStorage()) {
+    init(
+        scanner: ApplicationScanner = ApplicationScanner(),
+        storage: StartMenuStorage = StartMenuStorage(),
+        loginItemManager: LoginItemManaging = LoginItemService()
+    ) {
         var scanner = scanner
         let applicationSearchDirectoryBookmarks = storage.loadApplicationSearchDirectoryBookmarks()
         scanner.applicationDirectoryBookmarkData = applicationSearchDirectoryBookmarks
         self.scanner = scanner
         self.storage = storage
+        self.loginItemManager = loginItemManager
         self.pinnedApplicationIDs = storage.loadPinnedIDs()
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
+        self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
     }
 
@@ -79,6 +88,28 @@ final class StartMenuModel: ObservableObject {
     var recentApplications: [InstalledApplication] {
         let indexed = Dictionary(uniqueKeysWithValues: applications.map { ($0.id, $0) })
         return recentApplicationIDs.compactMap { indexed[$0] }
+    }
+
+    var launchesAtLogin: Bool {
+        loginItemStatus.isEnabled
+    }
+
+    func refreshLoginItemStatus() {
+        loginItemStatus = loginItemManager.status
+    }
+
+    func setLaunchesAtLogin(_ launchesAtLogin: Bool) {
+        do {
+            try loginItemManager.setEnabled(launchesAtLogin)
+            loginItemStatus = loginItemManager.status
+            loginItemError = nil
+        } catch {
+            loginItemStatus = loginItemManager.status
+            loginItemError = String.localizedStringWithFormat(
+                String(localized: "Could not update Open at Login: %@"),
+                error.localizedDescription
+            )
+        }
     }
 
     func reloadApplications() {

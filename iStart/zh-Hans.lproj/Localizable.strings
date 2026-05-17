@@ -15,6 +15,7 @@
 "Choose a folder that contains applications, such as your Applications folder." = "选择包含应用的文件夹，例如你的 Applications 文件夹。";
 "Choose a global keyboard shortcut for opening iStart from anywhere." = "选择一个可在任何位置打开 iStart 的全局键盘快捷键。";
 "Could not add application folder: %@" = "无法添加应用文件夹：%@";
+"Could not update Open at Login: %@" = "无法更新开机启动：%@";
 "Global shortcut is active." = "全局快捷键已启用。";
 "Go to System Settings" = "前往系统设置";
 "General" = "通用";
@@ -24,10 +25,13 @@
 "Indexing" = "索引";
 "iStart indexes applications from the standard macOS application folders and any extra folders listed below." = "iStart 会索引 macOS 标准应用文件夹以及下方列出的额外文件夹。";
 "Launched apps will appear here." = "启动过的应用会显示在这里。";
+"Login" = "登录";
 "More" = "更多";
 "No Additional Folders" = "暂无额外文件夹";
 "No recent apps" = "暂无最近应用";
 "Open System Settings" = "打开系统设置";
+"Open at Login" = "开机启动";
+"Open at Login requires approval in System Settings." = "开机启动需要在系统设置中批准。";
 "Option Space" = "Option 空格";
 "Pin to Start" = "固定到开始菜单";
 "Pinned" = "已固定";
@@ -52,6 +56,7 @@
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Unpin from Start" = "从开始菜单取消固定";
+"When iStart opens at login, it runs in the background without showing the Start menu." = "iStart 开机启动时会在后台运行，不显示开始菜单。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";

@@ -52,9 +52,13 @@ private struct GeneralSettingsPane: View {
 
             Section {
                 Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
             }
             header: {
                 Text("Start Menu")
+            }
+            footer: {
+                Text("When turned off, iStart opens to the home view every time.")
             }
         }
         .formStyle(.grouped)

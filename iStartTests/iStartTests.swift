@@ -181,6 +181,27 @@ struct iStartTests {
         #expect(storage.loadHotKey() == .optionSpace)
     }
 
+    @MainActor
+    @Test func startMenuStateRestoreDefaultsToEnabled() {
+        let storage = isolatedStorage()
+
+        #expect(storage.loadRestoresStartMenuState())
+    }
+
+    @MainActor
+    @Test func presentationPreparationResetsSearchWhenStateRestoreIsDisabled() {
+        let storage = isolatedStorage()
+        storage.saveRestoresStartMenuState(false)
+        let model = StartMenuModel(storage: storage)
+        model.searchText = "terminal"
+        let originalHomeResetToken = model.homeResetToken
+
+        model.prepareForPresentation()
+
+        #expect(model.searchText.isEmpty)
+        #expect(model.homeResetToken != originalHomeResetToken)
+    }
+
     private func makeApp(
         named name: String,
         bundleIdentifier: String,

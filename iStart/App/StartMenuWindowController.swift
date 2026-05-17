@@ -61,7 +61,7 @@ final class StartMenuWindowController {
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         animatePanelIn(to: targetFrame)
-        model.focusSearch()
+        model.prepareForPresentation()
     }
 
     func hide() {

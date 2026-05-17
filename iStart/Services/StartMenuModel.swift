@@ -18,9 +18,15 @@ final class StartMenuModel: ObservableObject {
             storage.saveShowsRecommendedSection(showsRecommendedSection)
         }
     }
+    @Published var restoresStartMenuState: Bool {
+        didSet {
+            storage.saveRestoresStartMenuState(restoresStartMenuState)
+        }
+    }
     @Published private(set) var applicationSearchDirectories: [URL]
     @Published var hotKeyRegistrationStatus: HotKeyRegistrationStatus = .unknown
     @Published private(set) var searchFocusToken = UUID()
+    @Published private(set) var homeResetToken = UUID()
 
     private var scanner: ApplicationScanner
     private let storage: StartMenuStorage
@@ -36,6 +42,7 @@ final class StartMenuModel: ObservableObject {
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
+        self.restoresStartMenuState = storage.loadRestoresStartMenuState()
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
     }
 
@@ -155,6 +162,15 @@ final class StartMenuModel: ObservableObject {
 
     func focusSearch() {
         searchFocusToken = UUID()
+    }
+
+    func prepareForPresentation() {
+        if !restoresStartMenuState {
+            searchText = ""
+            homeResetToken = UUID()
+        }
+
+        focusSearch()
     }
 
     func launch(_ application: InstalledApplication) {

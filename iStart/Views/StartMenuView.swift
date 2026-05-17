@@ -49,6 +49,10 @@ struct StartMenuView: View {
         .onAppear {
             model.focusSearch()
         }
+        .onChange(of: model.homeResetToken) {
+            showsAllApps = false
+            selectedSearchResultID = nil
+        }
         .onChange(of: model.searchFocusToken) {
             searchFocused = true
         }

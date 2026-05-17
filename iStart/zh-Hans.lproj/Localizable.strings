@@ -37,6 +37,7 @@
 "Rebuild Index" = "重建索引";
 "Reload" = "重新加载";
 "Remove Folder" = "移除文件夹";
+"Restore last menu state" = "恢复上次菜单状态";
 "Reset" = "重置";
 "Reset Pinned Apps?" = "要重置固定应用吗？";
 "Reset Pinned Apps" = "重置固定应用";
@@ -51,5 +52,6 @@
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Unpin from Start" = "从开始菜单取消固定";
+"When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";

@@ -122,8 +122,6 @@ struct AppIcon: View {
     }
 
     private var icon: NSImage {
-        let image = NSWorkspace.shared.icon(forFile: path)
-        image.size = NSSize(width: size, height: size)
-        return image
+        AppIconCache.shared.icon(forFile: path, size: size)
     }
 }

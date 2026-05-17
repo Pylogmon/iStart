@@ -317,7 +317,7 @@ final class StartMenuModel: ObservableObject {
 
 private enum ApplicationSearchMatcher {
     static func score(_ application: InstalledApplication, query: String) -> Int? {
-        let normalizedQuery = normalize(query)
+        let normalizedQuery = ApplicationSearchIndex.normalize(query)
         guard !normalizedQuery.isEmpty else { return 0 }
 
         var bestScore: Int?
@@ -329,53 +329,16 @@ private enum ApplicationSearchMatcher {
         return bestScore
     }
 
-    private static func searchKeys(for application: InstalledApplication) -> [SearchKey] {
-        var keys: [SearchKey] = [
-            SearchKey(text: normalize(application.name), weight: 0),
-            SearchKey(text: normalize(application.name, keepingSpaces: true), weight: 10),
-            SearchKey(text: normalize(application.name, keepingSpaces: true).initials, weight: 30),
-            SearchKey(text: normalize(application.bundleIdentifier ?? ""), weight: 60)
-        ]
-
-        let pinyin = pinyinSearchText(for: application.name)
-        keys.append(SearchKey(text: normalize(pinyin), weight: 20))
-        keys.append(SearchKey(text: normalize(pinyin, keepingSpaces: true), weight: 25))
-        keys.append(SearchKey(text: normalize(pinyin, keepingSpaces: true).initials, weight: 35))
-
-        return keys.filter { !$0.text.isEmpty }
-    }
-
-    private static func pinyinSearchText(for text: String) -> String {
-        text
-            .applyingTransform(.mandarinToLatin, reverse: false)?
-            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-            ?? text
-    }
-
-    private static func normalize(_ text: String, keepingSpaces: Bool = false) -> String {
-        let folded = text.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: .current)
-        let allowed = folded.unicodeScalars.map { scalar -> Character in
-            if CharacterSet.alphanumerics.contains(scalar) {
-                return Character(scalar)
-            }
-
-            return keepingSpaces ? " " : "\0"
+    private static func searchKeys(for application: InstalledApplication) -> [ApplicationSearchKey] {
+        if !application.searchKeys.isEmpty {
+            return application.searchKeys
         }
 
-        let normalized = String(allowed)
-            .replacingOccurrences(of: "\0", with: "")
-
-        guard keepingSpaces else { return normalized }
-        return normalized
-            .split(separator: " ")
-            .joined(separator: " ")
+        return ApplicationSearchIndex.keys(name: application.name, bundleIdentifier: application.bundleIdentifier)
     }
 }
 
-private struct SearchKey {
-    let text: String
-    let weight: Int
-
+private extension ApplicationSearchKey {
     func score(for query: String) -> Int? {
         if text == query {
             return weight

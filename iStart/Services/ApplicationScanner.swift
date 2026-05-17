@@ -49,7 +49,8 @@ struct ApplicationScanner {
             id: id,
             name: name,
             bundleIdentifier: bundleIdentifier,
-            path: url.path
+            path: url.path,
+            searchKeys: ApplicationSearchIndex.keys(name: name, bundleIdentifier: bundleIdentifier)
         )
     }
 
@@ -92,6 +93,58 @@ struct ApplicationScanner {
             realHomeDirectory.appendingPathComponent("Applications", isDirectory: true),
             URL(fileURLWithPath: "/System/Applications", isDirectory: true)
         ] + FileManager.default.urls(for: .applicationDirectory, in: .userDomainMask)
+    }
+}
+
+enum ApplicationSearchIndex {
+    static func keys(name: String, bundleIdentifier: String?) -> [ApplicationSearchKey] {
+        var keys: [ApplicationSearchKey] = [
+            ApplicationSearchKey(text: normalize(name), weight: 0),
+            ApplicationSearchKey(text: normalize(name, keepingSpaces: true), weight: 10),
+            ApplicationSearchKey(text: initials(for: normalize(name, keepingSpaces: true)), weight: 30),
+            ApplicationSearchKey(text: normalize(bundleIdentifier ?? ""), weight: 60)
+        ]
+
+        let pinyin = pinyinSearchText(for: name)
+        keys.append(ApplicationSearchKey(text: normalize(pinyin), weight: 20))
+        keys.append(ApplicationSearchKey(text: normalize(pinyin, keepingSpaces: true), weight: 25))
+        keys.append(ApplicationSearchKey(text: initials(for: normalize(pinyin, keepingSpaces: true)), weight: 35))
+
+        return keys.filter { !$0.text.isEmpty }
+    }
+
+    static func normalize(_ text: String, keepingSpaces: Bool = false) -> String {
+        let folded = text.folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: .current)
+        let allowed = folded.unicodeScalars.map { scalar -> Character in
+            if CharacterSet.alphanumerics.contains(scalar) {
+                return Character(scalar)
+            }
+
+            return keepingSpaces ? " " : "\0"
+        }
+
+        let normalized = String(allowed)
+            .replacingOccurrences(of: "\0", with: "")
+
+        guard keepingSpaces else { return normalized }
+        return normalized
+            .split(separator: " ")
+            .joined(separator: " ")
+    }
+
+    private static func pinyinSearchText(for text: String) -> String {
+        text
+            .applyingTransform(.mandarinToLatin, reverse: false)?
+            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+            ?? text
+    }
+
+    private static func initials(for text: String) -> String {
+        text
+            .split(separator: " ")
+            .compactMap(\.first)
+            .map(String.init)
+            .joined()
     }
 }
 

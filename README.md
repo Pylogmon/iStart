@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <a href="#特性"><img alt="macOS" src="https://img.shields.io/badge/macOS-26.0%2B-111111?style=flat-square&logo=apple"></a>
-  <a href="#开发"><img alt="Swift" src="https://img.shields.io/badge/Swift-5-orange?style=flat-square&logo=swift"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/pylogmon/iStart?style=flat-square"></a>
+  <a href="#特性"><img alt="macOS" src="https://img.shields.io/badge/macOS-26.0%2B-111111?logo=apple"></a>
+  <a href="#开发"><img alt="Swift" src="https://img.shields.io/badge/Swift-5-orange?logo=swift"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/pylogmon/iStart"></a>
 </p>
 
 <p align="center">

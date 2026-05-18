@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct StartMenuView: View {
     @ObservedObject var model: StartMenuModel
     @State private var showsAllApps = false
+    @State private var showsRecentApps = false
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
     @Environment(\.openSettings) private var openSettings
@@ -23,6 +24,8 @@ struct StartMenuView: View {
                 if model.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     if showsAllApps {
                         allAppsSection
+                    } else if showsRecentApps {
+                        recentAppsSection
                     } else {
                         pinnedSection
                         if model.showsRecommendedSection {
@@ -51,6 +54,7 @@ struct StartMenuView: View {
         }
         .onChange(of: model.homeResetToken) {
             showsAllApps = false
+            showsRecentApps = false
             selectedSearchResultID = nil
         }
         .onChange(of: model.searchFocusToken) {
@@ -99,12 +103,13 @@ struct StartMenuView: View {
     private var pinnedSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             sectionHeader(title: String(localized: "Pinned"), trailing: String(localized: "All apps")) {
+                showsRecentApps = false
                 showsAllApps = true
             }
 
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 14) {
-                    ForEach(model.pinnedApplications.prefix(pinnedApplicationLimit)) { application in
+                    ForEach(model.pinnedApplications) { application in
                         ApplicationTile(application: application, isPinned: model.isPinned(application)) {
                             launch(application)
                         } onTogglePinned: {
@@ -127,18 +132,17 @@ struct StartMenuView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .scrollIndicators(model.showsRecommendedSection ? .hidden : .automatic)
+            .scrollIndicators(.automatic)
             .frame(maxHeight: model.showsRecommendedSection ? 320 : 622)
         }
     }
 
-    private var pinnedApplicationLimit: Int {
-        model.showsRecommendedSection ? 18 : 36
-    }
-
     private var recommendedSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: String(localized: "Recommended"), trailing: String(localized: "More"))
+            sectionHeader(title: String(localized: "Recommended"), trailing: String(localized: "More")) {
+                showsAllApps = false
+                showsRecentApps = true
+            }
 
             if let launchError = model.launchError {
                 Label(launchError, systemImage: "exclamationmark.triangle.fill")
@@ -222,6 +226,36 @@ struct StartMenuView: View {
                 .padding(.vertical, 2)
             }
             .frame(maxHeight: 620)
+        }
+    }
+
+    private var recentAppsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: String(localized: "Recently opened"), trailing: String(localized: "Back")) {
+                showsRecentApps = false
+            }
+
+            if model.recentApplications.isEmpty {
+                ContentUnavailableView(
+                    String(localized: "No recent apps"),
+                    systemImage: "clock",
+                    description: Text("Launched apps will appear here.")
+                )
+                .frame(maxWidth: .infinity, minHeight: 420)
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 6) {
+                        ForEach(model.recentApplications) { application in
+                            RecentApplicationRow(application: application) {
+                                launch(application)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+                .frame(maxHeight: 620)
+            }
         }
     }
 

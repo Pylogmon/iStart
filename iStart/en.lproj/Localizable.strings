@@ -37,6 +37,8 @@
 "Pin to Start" = "Pin to Start";
 "Pinned" = "Pinned";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "Pinned apps will fall back to the default set the next time the Start menu is shown.";
+"Recent applications limit: %lld" = "Recent applications limit: %lld";
+"Recommended Section" = "Recommended Section";
 "Recently opened" = "Recently opened";
 "Recommended" = "Recommended";
 "Rebuild Index" = "Rebuild Index";
@@ -61,5 +63,6 @@
 "When iStart opens at login, it runs in the background without showing the Start menu." = "When iStart opens at login, it runs in the background without showing the Start menu.";
 "When turned off, iStart starts in the background until you open Settings or the Start menu." = "When turned off, iStart starts in the background until you open Settings or the Start menu.";
 "When turned off, iStart opens to the home view every time." = "When turned off, iStart opens to the home view every time.";
+"Controls how many recently opened applications are remembered." = "Controls how many recently opened applications are remembered.";
 "%lld apps indexed" = "%lld apps indexed";
 "%lld results" = "%lld results";

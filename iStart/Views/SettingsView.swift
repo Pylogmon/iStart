@@ -71,43 +71,6 @@ private struct GeneralSettingsPane: View {
     var body: some View {
         Form {
             Section {
-                ShortcutPickerRow(
-                    title: String(localized: "Show iStart"),
-                    selectedHotKey: hotKeySelection.wrappedValue,
-                    status: model.hotKeyRegistrationStatus
-                ) { hotKey in
-                    hotKeySelection.wrappedValue = hotKey
-                }
-            }
-            header: {
-                Text("Shortcut")
-            }
-            footer: {
-                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
-            }
-
-            Section {
-                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
-                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
-            }
-            header: {
-                Text("Start Menu")
-            }
-            footer: {
-                Text("When turned off, iStart opens to the home view every time.")
-            }
-
-            Section {
-                Toggle("Show Settings window at launch", isOn: $model.showsSettingsWindowOnLaunch)
-            }
-            header: {
-                Text("Launch")
-            }
-            footer: {
-                Text("When turned off, iStart starts in the background until you open Settings or the Start menu.")
-            }
-
-            Section {
                 Toggle("Open at Login", isOn: launchesAtLogin)
 
                 if let message = model.loginItemStatus.message {
@@ -128,6 +91,53 @@ private struct GeneralSettingsPane: View {
             }
             footer: {
                 Text("When iStart opens at login, it runs in the background without showing the Start menu.")
+            }
+
+            Section {
+                Toggle("Show Settings window at launch", isOn: $model.showsSettingsWindowOnLaunch)
+            }
+            header: {
+                Text("Launch")
+            }
+            footer: {
+                Text("When turned off, iStart starts in the background until you open Settings or the Start menu.")
+            }
+
+            Section {
+                ShortcutPickerRow(
+                    title: String(localized: "Show iStart"),
+                    selectedHotKey: hotKeySelection.wrappedValue,
+                    status: model.hotKeyRegistrationStatus
+                ) { hotKey in
+                    hotKeySelection.wrappedValue = hotKey
+                }
+            }
+            header: {
+                Text("Shortcut")
+            }
+            footer: {
+                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
+            }
+
+            Section {
+                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
+            }
+            header: {
+                Text("Start Menu")
+            }
+            footer: {
+                Text("When turned off, iStart opens to the home view every time.")
+            }
+            
+            Section {
+                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+                Stepper("Recent applications limit: \(model.recentApplicationLimit)", value: $model.recentApplicationLimit, in: 1...50)
+            }
+            header: {
+                Text("Recommended Section")
+            }
+            footer: {
+                Text("Controls how many recently opened applications are remembered.")
             }
         }
         .formStyle(.grouped)

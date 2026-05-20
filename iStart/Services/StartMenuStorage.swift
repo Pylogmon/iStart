@@ -11,6 +11,7 @@ struct StartMenuStorage {
         static let restoresStartMenuState = "restoresStartMenuState"
         static let showsSettingsWindowOnLaunch = "showsSettingsWindowOnLaunch"
         static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
+        static let recentApplicationLimit = "recentApplicationLimit"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -30,7 +31,19 @@ struct StartMenuStorage {
     }
 
     func saveRecentIDs(_ ids: [String]) {
-        defaults.set(Array(ids.prefix(8)), forKey: Keys.recentApplicationIDs)
+        defaults.set(Array(ids.prefix(loadRecentApplicationLimit())), forKey: Keys.recentApplicationIDs)
+    }
+
+    func loadRecentApplicationLimit() -> Int {
+        guard defaults.object(forKey: Keys.recentApplicationLimit) != nil else {
+            return 8
+        }
+
+        return defaults.integer(forKey: Keys.recentApplicationLimit)
+    }
+
+    func saveRecentApplicationLimit(_ limit: Int) {
+        defaults.set(limit, forKey: Keys.recentApplicationLimit)
     }
 
     func loadShowsRecommendedSection() -> Bool {

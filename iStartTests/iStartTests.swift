@@ -196,6 +196,102 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func recentItemsSourceDefaultsToSystem() {
+        let storage = isolatedStorage()
+
+        #expect(storage.loadRecentItemsSource() == .system)
+    }
+
+    @MainActor
+    @Test func recentItemsSourcePersists() {
+        let storage = isolatedStorage()
+
+        storage.saveRecentItemsSource(.application)
+
+        #expect(storage.loadRecentItemsSource() == .application)
+    }
+
+    @MainActor
+    @Test func modelUsesApplicationRecentItemsWhenSelected() throws {
+        let root = try temporaryDirectory()
+        try makeApp(named: "Alpha", bundleIdentifier: "com.example.alpha", in: root)
+        try makeApp(named: "Beta", bundleIdentifier: "com.example.beta", in: root)
+        let storage = isolatedStorage()
+        storage.saveRecentItemsSource(.application)
+
+        let model = StartMenuModel(
+            scanner: ApplicationScanner(searchRoots: [root]),
+            storage: storage,
+            systemRecentItemProvider: FakeSystemRecentItemProvider(items: [
+                RecentItem(name: "Ignored", url: URL(fileURLWithPath: "/tmp/ignored"), kind: .document)
+            ])
+        )
+        model.reloadApplications()
+        let alpha = try #require(model.applications.first { $0.name == "Alpha" })
+        let beta = try #require(model.applications.first { $0.name == "Beta" })
+        storage.saveRecentIDs([beta.id, alpha.id])
+        model.recentApplicationIDs = storage.loadRecentIDs()
+
+        #expect(model.recentItems.map(\.name) == ["Beta", "Alpha"])
+        #expect(model.recentItems.allSatisfy { $0.kind == .application })
+    }
+
+    @MainActor
+    @Test func modelUsesSystemRecentItemsWhenSelected() {
+        let storage = isolatedStorage()
+        storage.saveRecentItemsSource(.system)
+        storage.saveRecentApplicationLimit(2)
+        let items = [
+            RecentItem(name: "Preview", url: URL(fileURLWithPath: "/Applications/Preview.app"), kind: .application),
+            RecentItem(name: "Plan", url: URL(fileURLWithPath: "/tmp/Plan.pdf"), kind: .document),
+            RecentItem(name: "Downloads", url: URL(fileURLWithPath: "/tmp/Downloads"), kind: .folder)
+        ]
+
+        let model = StartMenuModel(
+            storage: storage,
+            systemRecentItemProvider: FakeSystemRecentItemProvider(items: items)
+        )
+
+        #expect(model.recentItems.map(\.name) == ["Preview", "Plan"])
+    }
+
+    @MainActor
+    @Test func systemRecentItemsSortByTimeDeduplicateAndRespectLimit() {
+        let first = URL(fileURLWithPath: "/tmp/Plan.pdf")
+        let second = URL(fileURLWithPath: "/tmp/Notes.txt")
+        let candidates = [
+            SystemRecentItemCandidate(
+                item: RecentItem(name: "Preview", url: URL(fileURLWithPath: "/Applications/Preview.app"), kind: .application),
+                recencyDate: Date(timeIntervalSince1970: 100),
+                sourceOrder: 0,
+                itemOrder: 0
+            ),
+            SystemRecentItemCandidate(
+                item: RecentItem(name: "Plan", url: first, kind: .document),
+                recencyDate: Date(timeIntervalSince1970: 200),
+                sourceOrder: 1,
+                itemOrder: 0
+            ),
+            SystemRecentItemCandidate(
+                item: RecentItem(name: "Plan Duplicate", url: first, kind: .document),
+                recencyDate: Date(timeIntervalSince1970: 300),
+                sourceOrder: 1,
+                itemOrder: 1
+            ),
+            SystemRecentItemCandidate(
+                item: RecentItem(name: "Notes", url: second, kind: .document),
+                recencyDate: nil,
+                sourceOrder: 1,
+                itemOrder: 2
+            )
+        ]
+
+        let result = SystemRecentItemProvider.sortedRecentItems(from: candidates, limit: 2)
+
+        #expect(result.map(\.name) == ["Plan Duplicate", "Preview"])
+    }
+
+    @MainActor
     @Test func presentationPreparationResetsSearchWhenStateRestoreIsDisabled() {
         let storage = isolatedStorage()
         storage.saveRestoresStartMenuState(false)
@@ -256,5 +352,13 @@ struct iStartTests {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         return StartMenuStorage(defaults: defaults)
+    }
+}
+
+private struct FakeSystemRecentItemProvider: SystemRecentItemProviding {
+    var items: [RecentItem]
+
+    func recentItems(limit: Int) -> [RecentItem] {
+        Array(items.prefix(limit))
     }
 }

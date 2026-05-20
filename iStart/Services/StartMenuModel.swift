@@ -31,6 +31,13 @@ final class StartMenuModel: ObservableObject {
     @Published var recentApplicationLimit: Int {
         didSet {
             storage.saveRecentApplicationLimit(recentApplicationLimit)
+            refreshSystemRecentItems()
+        }
+    }
+    @Published var recentItemsSource: RecentItemsSource {
+        didSet {
+            storage.saveRecentItemsSource(recentItemsSource)
+            refreshSystemRecentItems()
         }
     }
     @Published private(set) var loginItemStatus: LoginItemStatus
@@ -39,16 +46,19 @@ final class StartMenuModel: ObservableObject {
     @Published var hotKeyRegistrationStatus: HotKeyRegistrationStatus = .unknown
     @Published private(set) var searchFocusToken = UUID()
     @Published private(set) var homeResetToken = UUID()
+    @Published private(set) var systemRecentItems: [RecentItem] = []
 
     private var scanner: ApplicationScanner
     private let storage: StartMenuStorage
     private let loginItemManager: LoginItemManaging
+    private let systemRecentItemProvider: SystemRecentItemProviding
     private var isReloadingApplications = false
 
     init(
         scanner: ApplicationScanner = ApplicationScanner(),
         storage: StartMenuStorage = StartMenuStorage(),
-        loginItemManager: LoginItemManaging = LoginItemService()
+        loginItemManager: LoginItemManaging = LoginItemService(),
+        systemRecentItemProvider: SystemRecentItemProviding = SystemRecentItemProvider()
     ) {
         var scanner = scanner
         let applicationSearchDirectoryBookmarks = storage.loadApplicationSearchDirectoryBookmarks()
@@ -56,6 +66,7 @@ final class StartMenuModel: ObservableObject {
         self.scanner = scanner
         self.storage = storage
         self.loginItemManager = loginItemManager
+        self.systemRecentItemProvider = systemRecentItemProvider
         self.pinnedApplicationIDs = storage.loadPinnedIDs()
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
@@ -63,8 +74,12 @@ final class StartMenuModel: ObservableObject {
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
         self.showsSettingsWindowOnLaunch = storage.loadShowsSettingsWindowOnLaunch()
         self.recentApplicationLimit = storage.loadRecentApplicationLimit()
+        self.recentItemsSource = storage.loadRecentItemsSource()
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
+        if self.recentItemsSource == .system {
+            self.systemRecentItems = systemRecentItemProvider.recentItems(limit: self.recentApplicationLimit)
+        }
     }
 
     var filteredApplications: [InstalledApplication] {
@@ -100,6 +115,27 @@ final class StartMenuModel: ObservableObject {
     var recentApplications: [InstalledApplication] {
         let indexed = Dictionary(uniqueKeysWithValues: applications.map { ($0.id, $0) })
         return recentApplicationIDs.compactMap { indexed[$0] }
+    }
+
+    var recentItems: [RecentItem] {
+        switch recentItemsSource {
+        case .system:
+            return systemRecentItems
+        case .application:
+            return recentApplications.map { application in
+                RecentItem(
+                    id: application.id,
+                    name: application.name,
+                    url: application.url,
+                    kind: .application,
+                    applicationID: application.id
+                )
+            }
+        }
+    }
+
+    var recommendedRecentItems: [RecentItem] {
+        Array(recentItems.prefix(6))
     }
 
     var launchesAtLogin: Bool {
@@ -213,6 +249,7 @@ final class StartMenuModel: ObservableObject {
             homeResetToken = UUID()
         }
 
+        refreshSystemRecentItems()
         focusSearch()
     }
 
@@ -237,6 +274,25 @@ final class StartMenuModel: ObservableObject {
                 self.rememberLaunch(application)
                 NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
             }
+        }
+    }
+
+    func open(_ item: RecentItem) {
+        if let applicationID = item.applicationID,
+           let application = applications.first(where: { $0.id == applicationID }) {
+            launch(application)
+            return
+        }
+
+        if NSWorkspace.shared.open(item.url) {
+            launchError = nil
+            NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
+        } else {
+            launchError = String.localizedStringWithFormat(
+                String(localized: "Could not open %@: %@"),
+                item.name,
+                String(localized: "The system could not open this item.")
+            )
         }
     }
 
@@ -306,6 +362,11 @@ final class StartMenuModel: ObservableObject {
         recentApplicationIDs.insert(application.id, at: 0)
         recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
         storage.saveRecentIDs(recentApplicationIDs)
+    }
+
+    private func refreshSystemRecentItems() {
+        guard recentItemsSource == .system else { return }
+        systemRecentItems = systemRecentItemProvider.recentItems(limit: recentApplicationLimit)
     }
 
     private func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {

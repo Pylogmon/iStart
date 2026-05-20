@@ -3,27 +3,53 @@ import Collaboration
 import SwiftUI
 
 struct AccountButton: View {
-    var body: some View {
-        Button {
-            SystemSettingsOpener.openDefaultPage()
-        } label: {
-            HStack(spacing: 10) {
-                AccountAvatar(size: 28)
+    let onPowerAction: (PowerAction) -> Void
 
-                Text(displayName)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+    var body: some View {
+        Menu {
+            ForEach(PowerAction.accountActions) { action in
+                Button {
+                    onPowerAction(action)
+                } label: {
+                    Label(action.title, systemImage: action.systemImage)
+                }
             }
-            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Divider()
+
+            Button {
+                NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
+                SystemSettingsOpener.openDefaultPage()
+            } label: {
+                Label(String(localized: "Open System Settings"), systemImage: "gearshape")
+            }
+        } label: {
+            accountLabel
         }
+        .menuStyle(.button)
         .buttonStyle(.plain)
-        .help(Text("Open System Settings"))
+        .help(Text("Account"))
     }
 
     private var displayName: String {
         let fullName = NSFullUserName()
         return fullName.isEmpty ? NSUserName() : fullName
+    }
+
+    private var accountLabel: some View {
+        HStack(spacing: 10) {
+            AccountAvatar(size: 28)
+
+            Text(displayName)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+
+            Image(systemName: "chevron.up")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 

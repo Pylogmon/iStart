@@ -5,6 +5,7 @@
 "Add Folder" = "添加文件夹";
 "Add your user Applications folder to index Chrome PWA apps in sandbox mode." = "添加用户目录下的 Applications 文件夹，以便在沙盒模式下索引 Chrome PWA 应用。";
 "Additional application folders" = "额外应用文件夹";
+"Application folders" = "应用文件夹";
 "Back" = "返回";
 "Best match" = "最佳匹配";
 "Cancel" = "取消";
@@ -15,6 +16,7 @@
 "Choose a folder that contains applications, such as your Applications folder." = "选择包含应用的文件夹，例如你的 Applications 文件夹。";
 "Choose a global keyboard shortcut for opening iStart from anywhere." = "选择一个可在任何位置打开 iStart 的全局键盘快捷键。";
 "Could not add application folder: %@" = "无法添加应用文件夹：%@";
+"Could not open %@: %@" = "无法打开 %@：%@";
 "Could not update Open at Login: %@" = "无法更新开机启动：%@";
 "Global shortcut is active." = "全局快捷键已启用。";
 "Go to System Settings" = "前往系统设置";
@@ -53,6 +55,7 @@
 "Show recommended section" = "显示推荐区域";
 "Shortcut" = "快捷键";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "无法注册快捷键，可能已被 macOS 或其他应用占用。OSStatus %d。";
+"Shortcuts" = "快捷键";
 "Show iStart" = "显示 iStart";
 "Show Settings window at launch" = "启动时显示设置窗口";
 "Show Start Menu" = "显示开始菜单";

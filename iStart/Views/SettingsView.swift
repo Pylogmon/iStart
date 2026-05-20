@@ -18,7 +18,9 @@ struct SettingsView: View {
             Group {
                 switch selection ?? .general {
                 case .general:
-                    GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection)
+                    GeneralSettingsPane(model: model)
+                case .shortcuts:
+                    ShortcutSettingsPane(model: model, hotKeySelection: hotKeySelection)
                 case .applications:
                     ApplicationSettingsPane(model: model)
                 }
@@ -30,6 +32,7 @@ struct SettingsView: View {
 
 private enum SettingsSidebarItem: String, CaseIterable, Identifiable {
     case general
+    case shortcuts
     case applications
 
     var id: Self { self }
@@ -38,6 +41,8 @@ private enum SettingsSidebarItem: String, CaseIterable, Identifiable {
         switch self {
         case .general:
             "General"
+        case .shortcuts:
+            "Shortcuts"
         case .applications:
             "Applications"
         }
@@ -47,6 +52,8 @@ private enum SettingsSidebarItem: String, CaseIterable, Identifiable {
         switch self {
         case .general:
             "gearshape"
+        case .shortcuts:
+            "keyboard"
         case .applications:
             "app.dashed"
         }
@@ -66,7 +73,6 @@ private extension SettingsView {
 
 private struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
-    let hotKeySelection: Binding<HotKey>
 
     var body: some View {
         Form {
@@ -104,22 +110,6 @@ private struct GeneralSettingsPane: View {
             }
 
             Section {
-                ShortcutPickerRow(
-                    title: String(localized: "Show iStart"),
-                    selectedHotKey: hotKeySelection.wrappedValue,
-                    status: model.hotKeyRegistrationStatus
-                ) { hotKey in
-                    hotKeySelection.wrappedValue = hotKey
-                }
-            }
-            header: {
-                Text("Shortcut")
-            }
-            footer: {
-                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
-            }
-
-            Section {
                 Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
             }
             header: {
@@ -151,6 +141,34 @@ private struct GeneralSettingsPane: View {
         } set: { launchesAtLogin in
             model.setLaunchesAtLogin(launchesAtLogin)
         }
+    }
+}
+
+private struct ShortcutSettingsPane: View {
+    @ObservedObject var model: StartMenuModel
+    let hotKeySelection: Binding<HotKey>
+
+    var body: some View {
+        Form {
+            Section {
+                ShortcutPickerRow(
+                    title: String(localized: "Show iStart"),
+                    selectedHotKey: hotKeySelection.wrappedValue,
+                    status: model.hotKeyRegistrationStatus
+                ) { hotKey in
+                    hotKeySelection.wrappedValue = hotKey
+                }
+            }
+            header: {
+                Text("Shortcut")
+            }
+            footer: {
+                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
+            }
+        }
+        .formStyle(.grouped)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
     }
 }
 

@@ -9,6 +9,7 @@ struct StartMenuStorage {
         static let hotKey = "hotKey"
         static let showsRecommendedSection = "showsRecommendedSection"
         static let restoresStartMenuState = "restoresStartMenuState"
+        static let showsSettingsWindowOnLaunch = "showsSettingsWindowOnLaunch"
         static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
     }
 
@@ -54,6 +55,18 @@ struct StartMenuStorage {
 
     func saveRestoresStartMenuState(_ restoresStartMenuState: Bool) {
         defaults.set(restoresStartMenuState, forKey: Keys.restoresStartMenuState)
+    }
+
+    func loadShowsSettingsWindowOnLaunch() -> Bool {
+        guard defaults.object(forKey: Keys.showsSettingsWindowOnLaunch) != nil else {
+            return true
+        }
+
+        return defaults.bool(forKey: Keys.showsSettingsWindowOnLaunch)
+    }
+
+    func saveShowsSettingsWindowOnLaunch(_ showsSettingsWindowOnLaunch: Bool) {
+        defaults.set(showsSettingsWindowOnLaunch, forKey: Keys.showsSettingsWindowOnLaunch)
     }
 
     func loadHotKey() -> HotKey {

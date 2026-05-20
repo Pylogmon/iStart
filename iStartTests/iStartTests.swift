@@ -189,6 +189,13 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func settingsWindowLaunchDefaultsToEnabled() {
+        let storage = isolatedStorage()
+
+        #expect(storage.loadShowsSettingsWindowOnLaunch())
+    }
+
+    @MainActor
     @Test func presentationPreparationResetsSearchWhenStateRestoreIsDisabled() {
         let storage = isolatedStorage()
         storage.saveRestoresStartMenuState(false)

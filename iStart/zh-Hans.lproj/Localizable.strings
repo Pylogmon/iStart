@@ -25,6 +25,7 @@
 "Indexing" = "索引";
 "iStart indexes applications from the standard macOS application folders and any extra folders listed below." = "iStart 会索引 macOS 标准应用文件夹以及下方列出的额外文件夹。";
 "Launched apps will appear here." = "启动过的应用会显示在这里。";
+"Launch" = "启动";
 "Login" = "登录";
 "More" = "更多";
 "No Additional Folders" = "暂无额外文件夹";
@@ -51,12 +52,14 @@
 "Shortcut" = "快捷键";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "无法注册快捷键，可能已被 macOS 或其他应用占用。OSStatus %d。";
 "Show iStart" = "显示 iStart";
+"Show Settings window at launch" = "启动时显示设置窗口";
 "Show Start Menu" = "显示开始菜单";
 "Spacebar" = "空格键";
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Unpin from Start" = "从开始菜单取消固定";
 "When iStart opens at login, it runs in the background without showing the Start menu." = "iStart 开机启动时会在后台运行，不显示开始菜单。";
+"When turned off, iStart starts in the background until you open Settings or the Start menu." = "关闭后，iStart 会在后台启动，直到你打开设置或开始菜单。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";

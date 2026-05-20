@@ -6,10 +6,11 @@ struct iStartApp: App {
     @StateObject private var model = AppDependencies.startMenuModel
 
     var body: some Scene {
-        Settings {
+        WindowGroup("Settings", id: "settings") {
             SettingsView(model: model)
-                .frame(width: 540, height: 420)
+                .frame(minWidth: 720, minHeight: 520)
         }
+        .defaultSize(width: 760, height: 540)
         .commands {
             CommandGroup(replacing: .newItem) { }
 

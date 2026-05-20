@@ -2,23 +2,59 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var model: StartMenuModel
+    @State private var selection: SettingsSidebarItem? = .general
 
     var body: some View {
-        TabView {
-            GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection)
-                .tabItem {
-                    Label("General", systemImage: "gearshape")
+        NavigationSplitView {
+            List(selection: $selection) {
+                ForEach(SettingsSidebarItem.allCases) { item in
+                    Label(item.title, systemImage: item.systemImage)
+                        .tag(item)
                 }
-
-            ApplicationSettingsPane(model: model)
-                .tabItem {
-                    Label("Applications", systemImage: "app.dashed")
+            }
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 260)
+        } detail: {
+            Group {
+                switch selection ?? .general {
+                case .general:
+                    GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection)
+                case .applications:
+                    ApplicationSettingsPane(model: model)
                 }
+            }
+            .navigationTitle((selection ?? .general).title)
         }
-        .padding(.top, 8)
+    }
+}
+
+private enum SettingsSidebarItem: String, CaseIterable, Identifiable {
+    case general
+    case applications
+
+    var id: Self { self }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .general:
+            "General"
+        case .applications:
+            "Applications"
+        }
     }
 
-    private var hotKeySelection: Binding<HotKey> {
+    var systemImage: String {
+        switch self {
+        case .general:
+            "gearshape"
+        case .applications:
+            "app.dashed"
+        }
+    }
+}
+
+private extension SettingsView {
+    var hotKeySelection: Binding<HotKey> {
         Binding {
             model.hotKey
         } set: { hotKey in
@@ -59,6 +95,16 @@ private struct GeneralSettingsPane: View {
             }
             footer: {
                 Text("When turned off, iStart opens to the home view every time.")
+            }
+
+            Section {
+                Toggle("Show Settings window at launch", isOn: $model.showsSettingsWindowOnLaunch)
+            }
+            header: {
+                Text("Launch")
+            }
+            footer: {
+                Text("When turned off, iStart starts in the background until you open Settings or the Start menu.")
             }
 
             Section {

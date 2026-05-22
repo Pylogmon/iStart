@@ -37,8 +37,6 @@
 "Pin to Start" = "固定到开始菜单";
 "Pinned" = "已固定";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "下次显示开始菜单时，固定应用会回到默认集合。";
-"Recent applications limit: %lld" = "最近打开应用数量上限：%lld";
-"Recommended Section" = "推荐区域";
 "Recently opened" = "最近打开";
 "Recommended" = "推荐";
 "Rebuild Index" = "重建索引";
@@ -63,6 +61,5 @@
 "When iStart opens at login, it runs in the background without showing the Start menu." = "iStart 开机启动时会在后台运行，不显示开始菜单。";
 "When turned off, iStart starts in the background until you open Settings or the Start menu." = "关闭后，iStart 会在后台启动，直到你打开设置或开始菜单。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
-"Controls how many recently opened applications are remembered." = "控制记忆的最近打开应用数量。";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";

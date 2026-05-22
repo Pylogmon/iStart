@@ -28,11 +28,6 @@ final class StartMenuModel: ObservableObject {
             storage.saveShowsSettingsWindowOnLaunch(showsSettingsWindowOnLaunch)
         }
     }
-    @Published var recentApplicationLimit: Int {
-        didSet {
-            storage.saveRecentApplicationLimit(recentApplicationLimit)
-        }
-    }
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
     @Published private(set) var applicationSearchDirectories: [URL]
@@ -62,7 +57,6 @@ final class StartMenuModel: ObservableObject {
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
         self.showsSettingsWindowOnLaunch = storage.loadShowsSettingsWindowOnLaunch()
-        self.recentApplicationLimit = storage.loadRecentApplicationLimit()
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
     }
@@ -300,7 +294,7 @@ final class StartMenuModel: ObservableObject {
     private func rememberLaunch(_ application: InstalledApplication) {
         recentApplicationIDs.removeAll { $0 == application.id }
         recentApplicationIDs.insert(application.id, at: 0)
-        recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
+        recentApplicationIDs = Array(recentApplicationIDs.prefix(8))
         storage.saveRecentIDs(recentApplicationIDs)
     }
 

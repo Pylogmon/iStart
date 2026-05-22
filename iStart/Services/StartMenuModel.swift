@@ -23,11 +23,6 @@ final class StartMenuModel: ObservableObject {
             storage.saveRestoresStartMenuState(restoresStartMenuState)
         }
     }
-    @Published var showsSettingsWindowOnLaunch: Bool {
-        didSet {
-            storage.saveShowsSettingsWindowOnLaunch(showsSettingsWindowOnLaunch)
-        }
-    }
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
     @Published private(set) var applicationSearchDirectories: [URL]
@@ -56,7 +51,6 @@ final class StartMenuModel: ObservableObject {
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
-        self.showsSettingsWindowOnLaunch = storage.loadShowsSettingsWindowOnLaunch()
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
     }

@@ -25,7 +25,6 @@
 "Indexing" = "Indexing";
 "iStart indexes applications from the standard macOS application folders and any extra folders listed below." = "iStart indexes applications from the standard macOS application folders and any extra folders listed below.";
 "Launched apps will appear here." = "Launched apps will appear here.";
-"Launch" = "Launch";
 "Login" = "Login";
 "More" = "More";
 "No Additional Folders" = "No Additional Folders";
@@ -52,14 +51,12 @@
 "Shortcut" = "Shortcut";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d.";
 "Show iStart" = "Show iStart";
-"Show Settings window at launch" = "Show Settings window at launch";
 "Show Start Menu" = "Show Start Menu";
 "Spacebar" = "Spacebar";
 "Start Menu" = "Start Menu";
 "This removes your pinned app choices and restores the default pinned apps." = "This removes your pinned app choices and restores the default pinned apps.";
 "Unpin from Start" = "Unpin from Start";
 "When iStart opens at login, it runs in the background without showing the Start menu." = "When iStart opens at login, it runs in the background without showing the Start menu.";
-"When turned off, iStart starts in the background until you open Settings or the Start menu." = "When turned off, iStart starts in the background until you open Settings or the Start menu.";
 "When turned off, iStart opens to the home view every time." = "When turned off, iStart opens to the home view every time.";
 "%lld apps indexed" = "%lld apps indexed";
 "%lld results" = "%lld results";

@@ -8,7 +8,7 @@ struct StartMenuView: View {
     @State private var showsRecentApps = false
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
     @FocusState private var searchFocused: Bool
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
@@ -268,7 +268,7 @@ struct StartMenuView: View {
             Button {
                 NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
                 NSApp.activate(ignoringOtherApps: true)
-                openWindow(id: "settings")
+                openSettings()
             } label: {
                 Image(systemName: "gearshape")
             }

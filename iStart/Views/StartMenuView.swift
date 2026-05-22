@@ -8,12 +8,10 @@ struct StartMenuView: View {
     @State private var showsRecentApps = false
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
-    @State private var powerActionError: String?
     @Environment(\.openWindow) private var openWindow
     @FocusState private var searchFocused: Bool
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
-    private let powerActionService = PowerActionService()
     private var searchResults: [InstalledApplication] {
         Array(model.filteredApplications.prefix(80))
     }
@@ -76,23 +74,6 @@ struct StartMenuView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .startMenuOpenSelection)) { _ in
             openSelectedSearchResult()
-        }
-        .alert(
-            String(localized: "Power Action Failed"),
-            isPresented: Binding(
-                get: { powerActionError != nil },
-                set: { isPresented in
-                    if !isPresented {
-                        powerActionError = nil
-                    }
-                }
-            )
-        ) {
-            Button("OK", role: .cancel) {
-                powerActionError = nil
-            }
-        } message: {
-            Text(powerActionError ?? "")
         }
     }
 
@@ -173,19 +154,19 @@ struct StartMenuView: View {
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
-            if model.recommendedRecentItems.isEmpty {
+            if model.recentApplications.isEmpty {
                 ContentUnavailableView(
-                    model.recentItemsSource.emptyRecentItemsTitle,
+                    String(localized: "No recent apps"),
                     systemImage: "clock",
-                    description: Text(model.recentItemsSource.emptyRecentItemsDescription)
+                    description: Text("Launched apps will appear here.")
                 )
                 .frame(maxWidth: .infinity, minHeight: 118)
                 .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(model.recommendedRecentItems) { item in
-                        RecentItemRow(item: item) {
-                            model.open(item)
+                    ForEach(model.recentApplications.prefix(6)) { application in
+                        RecentApplicationRow(application: application) {
+                            launch(application)
                         }
                     }
                 }
@@ -254,20 +235,20 @@ struct StartMenuView: View {
                 showsRecentApps = false
             }
 
-            if model.recentItems.isEmpty {
+            if model.recentApplications.isEmpty {
                 ContentUnavailableView(
-                    model.recentItemsSource.emptyRecentItemsTitle,
+                    String(localized: "No recent apps"),
                     systemImage: "clock",
-                    description: Text(model.recentItemsSource.emptyRecentItemsDescription)
+                    description: Text("Launched apps will appear here.")
                 )
                 .frame(maxWidth: .infinity, minHeight: 420)
                 .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 ScrollView {
                     LazyVStack(spacing: 6) {
-                        ForEach(model.recentItems) { item in
-                            RecentItemRow(item: item) {
-                                model.open(item)
+                        ForEach(model.recentApplications) { application in
+                            RecentApplicationRow(application: application) {
+                                launch(application)
                             }
                         }
                     }
@@ -280,46 +261,23 @@ struct StartMenuView: View {
 
     private var footer: some View {
         HStack {
-            AccountButton { action in
-                handlePowerAction(action)
-            }
+            AccountButton()
 
             Spacer()
 
-            HStack(spacing: 16) {
-                Button {
-                    NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
-                    NSApp.activate(ignoringOtherApps: true)
-                    openWindow(id: "settings")
-                } label: {
-                    Image(systemName: "gearshape")
-                }
-                .buttonStyle(.plain)
-                .help("Settings")
-
-                powerMenu
+            Button {
+                NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: "settings")
+            } label: {
+                Image(systemName: "gearshape")
             }
+            .buttonStyle(.plain)
+            .help("Settings")
         }
         .padding(.horizontal, 32)
         .frame(height: 64)
         .background(.regularMaterial)
-    }
-
-    private var powerMenu: some View {
-        Menu {
-            ForEach(PowerAction.powerMenuActions) { action in
-                Button {
-                    handlePowerAction(action)
-                } label: {
-                    Label(action.title, systemImage: action.systemImage)
-                }
-            }
-        } label: {
-            Image(systemName: "power")
-        }
-        .menuStyle(.button)
-        .buttonStyle(.plain)
-        .help("Power")
     }
 
     private func sectionHeader(title: String, trailing: String, action: (() -> Void)? = nil) -> some View {
@@ -404,63 +362,8 @@ struct StartMenuView: View {
         searchResults.first { $0.id == id }
     }
 
-    private func handlePowerAction(_ action: PowerAction) {
-        if action.requiresConfirmation, !confirmPowerAction(action) {
-            return
-        }
-
-        executePowerAction(action)
-    }
-
-    private func executePowerAction(_ action: PowerAction) {
-        do {
-            try powerActionService.perform(action)
-            NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
-        } catch {
-            powerActionError = String.localizedStringWithFormat(
-                String(localized: "Could not perform %@: %@"),
-                action.title,
-                error.localizedDescription
-            )
-        }
-    }
-
-    private func confirmPowerAction(_ action: PowerAction) -> Bool {
-        NSApp.activate(ignoringOtherApps: true)
-
-        let alert = NSAlert()
-        alert.messageText = action.confirmationTitle
-        alert.informativeText = action.confirmationMessage
-        alert.alertStyle = .warning
-        alert.addButton(withTitle: action.title)
-        alert.addButton(withTitle: String(localized: "Cancel"))
-        alert.buttons.first?.hasDestructiveAction = true
-
-        return alert.runModal() == .alertFirstButtonReturn
-    }
-
     private var isSearching: Bool {
         !model.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-}
-
-private extension RecentItemsSource {
-    var emptyRecentItemsTitle: String {
-        switch self {
-        case .system:
-            String(localized: "No recent items")
-        case .application:
-            String(localized: "No recent apps")
-        }
-    }
-
-    var emptyRecentItemsDescription: LocalizedStringKey {
-        switch self {
-        case .system:
-            "System recent items will appear here."
-        case .application:
-            "Launched apps will appear here."
-        }
     }
 }
 

@@ -121,21 +121,13 @@ private struct GeneralSettingsPane: View {
             
             Section {
                 Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
-                Picker("Recent items source", selection: $model.recentItemsSource) {
-                    ForEach(RecentItemsSource.allCases) { source in
-                        Text(source.localizedTitle)
-                            .tag(source)
-                    }
-                }
-                .pickerStyle(.menu)
-
-                Stepper("Recent items limit: \(model.recentApplicationLimit)", value: $model.recentApplicationLimit, in: 1...50)
+                Stepper("Recent applications limit: \(model.recentApplicationLimit)", value: $model.recentApplicationLimit, in: 1...50)
             }
             header: {
                 Text("Recommended Section")
             }
             footer: {
-                Text("Choose whether recommendations use macOS Recent Items or iStart's launched apps history.")
+                Text("Controls how many recently opened applications are remembered.")
             }
         }
         .formStyle(.grouped)
@@ -148,17 +140,6 @@ private struct GeneralSettingsPane: View {
             model.launchesAtLogin
         } set: { launchesAtLogin in
             model.setLaunchesAtLogin(launchesAtLogin)
-        }
-    }
-}
-
-private extension RecentItemsSource {
-    var localizedTitle: LocalizedStringKey {
-        switch self {
-        case .system:
-            "System Recent Items"
-        case .application:
-            "iStart Recent Applications"
         }
     }
 }

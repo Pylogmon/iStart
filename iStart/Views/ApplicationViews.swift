@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct ApplicationTile: View {
     let application: InstalledApplication
@@ -81,24 +80,23 @@ struct SearchResultRow: View {
     }
 }
 
-struct RecentItemRow: View {
-    let item: RecentItem
+struct RecentApplicationRow: View {
+    let application: InstalledApplication
     let onLaunch: () -> Void
 
     var body: some View {
         Button(action: onLaunch) {
             HStack(spacing: 10) {
-                FileIcon(url: item.url, size: 30)
+                AppIcon(path: application.path, size: 30)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: item.name)
+                    Text(verbatim: application.name)
                         .font(.system(size: 13, weight: .medium))
                         .lineLimit(1)
 
-                    Text(item.kind.localizedTitle)
+                    Text("Recently opened")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
 
                 Spacer()
@@ -108,23 +106,6 @@ struct RecentItemRow: View {
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
-    }
-}
-
-private extension RecentItemKind {
-    var localizedTitle: LocalizedStringKey {
-        switch self {
-        case .application:
-            "Application"
-        case .document:
-            "Document"
-        case .folder:
-            "Folder"
-        case .server:
-            "Server"
-        case .other:
-            "Recently opened"
-        }
     }
 }
 
@@ -142,28 +123,5 @@ struct AppIcon: View {
 
     private var icon: NSImage {
         AppIconCache.shared.icon(forFile: path, size: size)
-    }
-}
-
-struct FileIcon: View {
-    let url: URL
-    let size: CGFloat
-
-    var body: some View {
-        Image(nsImage: icon)
-            .resizable()
-            .interpolation(.high)
-            .aspectRatio(contentMode: .fit)
-            .frame(width: size, height: size)
-    }
-
-    private var icon: NSImage {
-        if url.isFileURL {
-            return AppIconCache.shared.icon(forFile: url.path, size: size)
-        }
-
-        let icon = NSWorkspace.shared.icon(for: .url)
-        icon.size = NSSize(width: size, height: size)
-        return icon
     }
 }

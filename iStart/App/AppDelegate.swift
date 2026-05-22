@@ -34,6 +34,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        let menu = NSMenu()
+
+        menu.addItem(
+            NSMenuItem(
+                title: String(localized: "Open Settings"),
+                action: #selector(openSettingsFromDockMenu),
+                keyEquivalent: ""
+            )
+        )
+        menu.addItem(
+            NSMenuItem(
+                title: String(localized: "Show Start Menu"),
+                action: #selector(showStartMenuFromDockMenu),
+                keyEquivalent: ""
+            )
+        )
+        menu.items.forEach { $0.target = self }
+
+        return menu
+    }
+
     func showStartMenu() {
         resolveWindowController().showAndFocusSearch()
     }
@@ -196,5 +218,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             UnregisterEventHotKey(hotKeyRef)
             self.hotKeyRef = nil
         }
+    }
+
+    @objc private func openSettingsFromDockMenu() {
+        showSettings()
+    }
+
+    @objc private func showStartMenuFromDockMenu() {
+        showStartMenu()
     }
 }

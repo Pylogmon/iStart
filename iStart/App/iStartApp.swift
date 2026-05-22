@@ -4,7 +4,6 @@ import SwiftUI
 struct iStartApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = AppDependencies.startMenuModel
-    @Environment(\.openWindow) private var openWindow
 
     var body: some Scene {
         Window("Settings", id: "settings") {
@@ -15,15 +14,6 @@ struct iStartApp: App {
         .defaultLaunchBehavior(model.showsSettingsWindowOnLaunch ? .presented : .suppressed)
         .commands {
             CommandGroup(replacing: .newItem) { }
-
-            CommandGroup(before: .appTermination) {
-                Button {
-                    openWindow(id: "settings")
-                } label: {
-                    Label(NSLocalizedString("Settings", comment: "") + "...", systemImage: "gear")
-                }
-                .keyboardShortcut(",", modifiers: .command)
-            }
 
             CommandMenu("iStart") {
                 Button("Show Start Menu") {

@@ -9,9 +9,9 @@ struct iStartApp: App {
     var body: some Scene {
         Window("Settings", id: "settings") {
             SettingsView(model: model)
-                .frame(minWidth: 800, minHeight: 520)
+                .frame(minWidth: 720, minHeight: 520)
         }
-        .defaultSize(width: 850, height: 620)
+        .defaultSize(width: 760, height: 540)
         .defaultLaunchBehavior(model.showsSettingsWindowOnLaunch ? .presented : .suppressed)
         .commands {
             CommandGroup(replacing: .newItem) { }

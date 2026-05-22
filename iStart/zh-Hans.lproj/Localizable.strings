@@ -26,6 +26,7 @@
 "iStart indexes applications from the standard macOS application folders and any extra folders listed below." = "iStart 会索引 macOS 标准应用文件夹以及下方列出的额外文件夹。";
 "Launched apps will appear here." = "启动过的应用会显示在这里。";
 "Login" = "登录";
+"Menu Bar" = "菜单栏";
 "More" = "更多";
 "No Additional Folders" = "暂无额外文件夹";
 "No recent apps" = "暂无最近应用";
@@ -37,6 +38,7 @@
 "Pin to Start" = "固定到开始菜单";
 "Pinned" = "已固定";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "下次显示开始菜单时，固定应用会回到默认集合。";
+"Quit iStart" = "退出 iStart";
 "Recently opened" = "最近打开";
 "Recent apps saved" = "保存最近打开应用";
 "Recommended" = "推荐";
@@ -53,11 +55,13 @@
 "Shortcut" = "快捷键";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "无法注册快捷键，可能已被 macOS 或其他应用占用。OSStatus %d。";
 "Show iStart" = "显示 iStart";
+"Show Menu Bar Extra" = "显示菜单栏图标";
 "Show Start Menu" = "显示开始菜单";
 "Spacebar" = "空格键";
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Unpin from Start" = "从开始菜单取消固定";
+"When hidden, use the Dock icon or App menu to open iStart." = "隐藏后，可通过 Dock 图标或应用菜单打开 iStart。";
 "When iStart opens at login, it runs in the background without showing the Start menu." = "iStart 开机启动时会在后台运行，不显示开始菜单。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
 "%lld apps" = "%lld 个应用";

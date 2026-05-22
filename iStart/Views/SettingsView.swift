@@ -35,6 +35,7 @@ struct SettingsView: View {
 
 struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
+    @AppStorage(StartMenuStorage.showsMenuBarExtraDefaultsKey) private var showsMenuBarExtra = true
 
     var body: some View {
         Form {
@@ -53,6 +54,16 @@ struct GeneralSettingsPane: View {
             }
             footer: {
                 Text("When turned off, iStart opens to the home view every time.")
+            }
+
+            Section {
+                Toggle("Show Menu Bar Extra", isOn: $showsMenuBarExtra)
+            }
+            header: {
+                Text("Menu Bar")
+            }
+            footer: {
+                Text("When hidden, use the Dock icon or App menu to open iStart.")
             }
 
             Section {

@@ -1,6 +1,8 @@
 import Foundation
 
 struct StartMenuStorage {
+    static let showsMenuBarExtraDefaultsKey = "showsMenuBarExtra"
+
     private let defaults: UserDefaults
 
     private enum Keys {

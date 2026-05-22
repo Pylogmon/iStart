@@ -53,7 +53,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         title: String(localized: "General"),
                         toolbarIcon: settingsIcon(systemName: "gearshape")
                     ) {
-                        GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection(for: model))
+                        GeneralSettingsPane(model: model)
+                            .frame(width: 540)
+                    },
+                    Settings.Pane(
+                        identifier: Settings.PaneIdentifier("shortcut"),
+                        title: String(localized: "Shortcut"),
+                        toolbarIcon: settingsIcon(systemName: "keyboard")
+                    ) {
+                        ShortcutSettingsPane(model: model, hotKeySelection: hotKeySelection(for: model))
                             .frame(width: 540)
                     },
                     Settings.Pane(

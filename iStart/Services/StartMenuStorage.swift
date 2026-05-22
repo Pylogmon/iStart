@@ -9,8 +9,12 @@ struct StartMenuStorage {
         static let hotKey = "hotKey"
         static let showsRecommendedSection = "showsRecommendedSection"
         static let restoresStartMenuState = "restoresStartMenuState"
+        static let recentApplicationLimit = "recentApplicationLimit"
         static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
     }
+
+    static let defaultRecentApplicationLimit = 8
+    static let recentApplicationLimitRange = 0...50
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -28,8 +32,21 @@ struct StartMenuStorage {
         defaults.stringArray(forKey: Keys.recentApplicationIDs) ?? []
     }
 
-    func saveRecentIDs(_ ids: [String]) {
-        defaults.set(Array(ids.prefix(8)), forKey: Keys.recentApplicationIDs)
+    func saveRecentIDs(_ ids: [String], limit: Int? = nil) {
+        let limit = Self.clampedRecentApplicationLimit(limit ?? loadRecentApplicationLimit())
+        defaults.set(Array(ids.prefix(limit)), forKey: Keys.recentApplicationIDs)
+    }
+
+    func loadRecentApplicationLimit() -> Int {
+        guard defaults.object(forKey: Keys.recentApplicationLimit) != nil else {
+            return Self.defaultRecentApplicationLimit
+        }
+
+        return Self.clampedRecentApplicationLimit(defaults.integer(forKey: Keys.recentApplicationLimit))
+    }
+
+    func saveRecentApplicationLimit(_ limit: Int) {
+        defaults.set(Self.clampedRecentApplicationLimit(limit), forKey: Keys.recentApplicationLimit)
     }
 
     func loadShowsRecommendedSection() -> Bool {
@@ -77,5 +94,9 @@ struct StartMenuStorage {
 
     func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
         defaults.set(bookmarks, forKey: Keys.applicationSearchDirectoryBookmarks)
+    }
+
+    private static func clampedRecentApplicationLimit(_ limit: Int) -> Int {
+        min(max(limit, recentApplicationLimitRange.lowerBound), recentApplicationLimitRange.upperBound)
     }
 }

@@ -23,6 +23,7 @@ final class StartMenuModel: ObservableObject {
             storage.saveRestoresStartMenuState(restoresStartMenuState)
         }
     }
+    @Published private(set) var recentApplicationLimit: Int
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
     @Published private(set) var applicationSearchDirectories: [URL]
@@ -51,8 +52,10 @@ final class StartMenuModel: ObservableObject {
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
+        self.recentApplicationLimit = storage.loadRecentApplicationLimit()
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
+        self.recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
     }
 
     var filteredApplications: [InstalledApplication] {
@@ -110,6 +113,15 @@ final class StartMenuModel: ObservableObject {
                 error.localizedDescription
             )
         }
+    }
+
+    func setRecentApplicationLimit(_ limit: Int) {
+        let limit = Self.clampedRecentApplicationLimit(limit)
+        guard recentApplicationLimit != limit else { return }
+
+        recentApplicationLimit = limit
+        trimRecentApplications()
+        storage.saveRecentApplicationLimit(limit)
     }
 
     func reloadApplications() {
@@ -288,8 +300,12 @@ final class StartMenuModel: ObservableObject {
     private func rememberLaunch(_ application: InstalledApplication) {
         recentApplicationIDs.removeAll { $0 == application.id }
         recentApplicationIDs.insert(application.id, at: 0)
-        recentApplicationIDs = Array(recentApplicationIDs.prefix(8))
-        storage.saveRecentIDs(recentApplicationIDs)
+        trimRecentApplications()
+    }
+
+    private func trimRecentApplications() {
+        recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
+        storage.saveRecentIDs(recentApplicationIDs, limit: recentApplicationLimit)
     }
 
     private func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
@@ -312,6 +328,13 @@ final class StartMenuModel: ObservableObject {
 
             return url
         }
+    }
+
+    private static func clampedRecentApplicationLimit(_ limit: Int) -> Int {
+        min(
+            max(limit, StartMenuStorage.recentApplicationLimitRange.lowerBound),
+            StartMenuStorage.recentApplicationLimitRange.upperBound
+        )
     }
 }
 

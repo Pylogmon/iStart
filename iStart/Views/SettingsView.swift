@@ -5,9 +5,14 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection)
+            GeneralSettingsPane(model: model)
                 .tabItem {
                     Label("General", systemImage: "gearshape")
+                }
+
+            ShortcutSettingsPane(model: model, hotKeySelection: hotKeySelection)
+                .tabItem {
+                    Label("Shortcut", systemImage: "keyboard")
                 }
 
             ApplicationSettingsPane(model: model)
@@ -30,28 +35,17 @@ struct SettingsView: View {
 
 struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
-    let hotKeySelection: Binding<HotKey>
 
     var body: some View {
         Form {
             Section {
-                ShortcutPickerRow(
-                    title: String(localized: "Show iStart"),
-                    selectedHotKey: hotKeySelection.wrappedValue,
-                    status: model.hotKeyRegistrationStatus
-                ) { hotKey in
-                    hotKeySelection.wrappedValue = hotKey
-                }
-            }
-            header: {
-                Text("Shortcut")
-            }
-            footer: {
-                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
-            }
-
-            Section {
                 Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+                Stepper(value: recentApplicationLimit, in: StartMenuStorage.recentApplicationLimitRange) {
+                    LabeledContent("Recent apps saved") {
+                        Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
             }
             header: {
@@ -95,6 +89,42 @@ struct GeneralSettingsPane: View {
         } set: { launchesAtLogin in
             model.setLaunchesAtLogin(launchesAtLogin)
         }
+    }
+
+    private var recentApplicationLimit: Binding<Int> {
+        Binding {
+            model.recentApplicationLimit
+        } set: { limit in
+            model.setRecentApplicationLimit(limit)
+        }
+    }
+}
+
+struct ShortcutSettingsPane: View {
+    @ObservedObject var model: StartMenuModel
+    let hotKeySelection: Binding<HotKey>
+
+    var body: some View {
+        Form {
+            Section {
+                ShortcutPickerRow(
+                    title: String(localized: "Show iStart"),
+                    selectedHotKey: hotKeySelection.wrappedValue,
+                    status: model.hotKeyRegistrationStatus
+                ) { hotKey in
+                    hotKeySelection.wrappedValue = hotKey
+                }
+            }
+            header: {
+                Text("Shortcut")
+            }
+            footer: {
+                Text("Choose a global keyboard shortcut for opening iStart from anywhere.")
+            }
+        }
+        .formStyle(.grouped)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
     }
 }
 

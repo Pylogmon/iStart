@@ -37,6 +37,7 @@
 "Pinned" = "已固定";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "下次显示开始菜单时，固定应用会回到默认集合。";
 "Recently opened" = "最近打开";
+"Recent apps saved" = "保存最近打开应用";
 "Recommended" = "推荐";
 "Rebuild Index" = "重建索引";
 "Reload" = "重新加载";
@@ -58,5 +59,6 @@
 "Unpin from Start" = "从开始菜单取消固定";
 "When iStart opens at login, it runs in the background without showing the Start menu." = "iStart 开机启动时会在后台运行，不显示开始菜单。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";
+"%lld apps" = "%lld 个应用";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";

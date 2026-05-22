@@ -28,7 +28,7 @@ struct SettingsView: View {
     }
 }
 
-private struct GeneralSettingsPane: View {
+struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
     let hotKeySelection: Binding<HotKey>
 
@@ -203,7 +203,7 @@ private extension HotKeyRegistrationStatus {
     }
 }
 
-private struct ApplicationSettingsPane: View {
+struct ApplicationSettingsPane: View {
     @ObservedObject var model: StartMenuModel
     @State private var isResetPinnedAppsConfirmationPresented = false
 

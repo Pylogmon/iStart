@@ -1,9 +1,11 @@
 import AppKit
 import Carbon.HIToolbox
+import Settings
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var windowController: StartMenuWindowController?
+    private var settingsWindowController: SettingsWindowController?
     private var hotKeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
     private weak var model: StartMenuModel?
@@ -18,7 +20,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             let model = self.resolveModel()
             self.model = model
-            self.windowController = StartMenuWindowController(model: model)
+            self.windowController = StartMenuWindowController(model: model) { [weak self] in
+                self?.showSettings()
+            }
             self.installHotKeyHandler()
             self.registerCurrentHotKey()
             self.presentInitialStartMenuIfNeeded()
@@ -36,6 +40,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func toggleStartMenu() {
         resolveWindowController().toggle()
+    }
+
+    func showSettings() {
+        let model = resolveModel()
+
+        if settingsWindowController == nil {
+            settingsWindowController = SettingsWindowController(
+                panes: [
+                    Settings.Pane(
+                        identifier: Settings.PaneIdentifier("general"),
+                        title: String(localized: "General"),
+                        toolbarIcon: settingsIcon(systemName: "gearshape")
+                    ) {
+                        GeneralSettingsPane(model: model, hotKeySelection: hotKeySelection(for: model))
+                            .frame(width: 540)
+                    },
+                    Settings.Pane(
+                        identifier: Settings.PaneIdentifier("applications"),
+                        title: String(localized: "Applications"),
+                        toolbarIcon: settingsIcon(systemName: "app.dashed")
+                    ) {
+                        ApplicationSettingsPane(model: model)
+                            .frame(width: 600)
+                    }
+                ]
+            )
+        }
+
+        settingsWindowController?.show()
+        NSApp.activate(ignoringOtherApps: true)
+        settingsWindowController?.window?.makeKeyAndOrderFront(nil)
+        settingsWindowController?.window?.orderFrontRegardless()
     }
 
     func registerCurrentHotKey() {
@@ -76,7 +112,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return windowController
         }
 
-        let controller = StartMenuWindowController(model: resolveModel())
+        let controller = StartMenuWindowController(model: resolveModel()) { [weak self] in
+            self?.showSettings()
+        }
         windowController = controller
         return controller
     }
@@ -128,6 +166,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         InstallEventHandler(GetApplicationEventTarget(), handler, 1, &eventType, nil, &eventHandlerRef)
+    }
+
+    private func settingsIcon(systemName: String) -> NSImage {
+        NSImage(systemSymbolName: systemName, accessibilityDescription: nil)
+            ?? NSImage(named: NSImage.applicationIconName)
+            ?? NSImage(size: NSSize(width: 24, height: 24))
+    }
+
+    private func hotKeySelection(for model: StartMenuModel) -> Binding<HotKey> {
+        Binding {
+            model.hotKey
+        } set: { [weak self] hotKey in
+            model.hotKey = hotKey
+            self?.registerCurrentHotKey()
+        }
     }
 
     private func unregisterHotKey() {

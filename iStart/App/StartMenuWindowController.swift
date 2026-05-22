@@ -7,10 +7,10 @@ final class StartMenuWindowController {
     private let panel: StartMenuPanel
     private var hideObserver: NSObjectProtocol?
 
-    init(model: StartMenuModel) {
+    init(model: StartMenuModel, onOpenSettings: @escaping () -> Void) {
         self.model = model
 
-        let contentView = StartMenuView(model: model)
+        let contentView = StartMenuView(model: model, onOpenSettings: onOpenSettings)
         let hostingView = NSHostingView(rootView: contentView)
         hostingView.wantsLayer = true
         hostingView.layer?.cornerRadius = 18

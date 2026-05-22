@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5E8A1022FB9200000A1B2C3 /* Settings in Frameworks */ = {isa = PBXBuildFile; productRef = B5E8A1012FB9200000A1B2C3 /* Settings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B498188E2FB852E200DAA422 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5E8A1022FB9200000A1B2C3 /* Settings in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = iStart;
 			packageProductDependencies = (
+				B5E8A1012FB9200000A1B2C3 /* Settings */,
 			);
 			productName = iStart;
 			productReference = B498187E2FB852E100DAA422 /* iStart.app */;
@@ -196,6 +202,9 @@
 			);
 			mainGroup = B49818752FB852E100DAA422;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B5E8A1002FB9200000A1B2C3 /* XCRemoteSwiftPackageReference "Settings" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B498187F2FB852E100DAA422 /* Products */;
 			projectDirPath = "";
@@ -268,6 +277,25 @@
 			targetProxy = B49818982FB852E200DAA422 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B5E8A1002FB9200000A1B2C3 /* XCRemoteSwiftPackageReference "Settings" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/Settings.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5E8A1012FB9200000A1B2C3 /* Settings */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5E8A1002FB9200000A1B2C3 /* XCRemoteSwiftPackageReference "Settings" */;
+			productName = Settings;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B498189F2FB852E200DAA422 /* Debug */ = {

@@ -4,11 +4,11 @@ import UniformTypeIdentifiers
 
 struct StartMenuView: View {
     @ObservedObject var model: StartMenuModel
+    var onOpenSettings: () -> Void = {}
     @State private var showsAllApps = false
     @State private var showsRecentApps = false
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
-    @Environment(\.openSettings) private var openSettings
     @FocusState private var searchFocused: Bool
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
@@ -267,8 +267,9 @@ struct StartMenuView: View {
 
             Button {
                 NotificationCenter.default.post(name: .startMenuShouldHide, object: nil)
-                NSApp.activate(ignoringOtherApps: true)
-                openSettings()
+                DispatchQueue.main.async {
+                    onOpenSettings()
+                }
             } label: {
                 Image(systemName: "gearshape")
             }

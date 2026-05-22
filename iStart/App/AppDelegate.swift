@@ -30,10 +30,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        false
-    }
-
     func showStartMenu() {
         resolveWindowController().showAndFocusSearch()
     }
@@ -89,9 +85,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let model = resolveModel()
         model.refreshLoginItemStatus()
 
+        if !model.showsSettingsWindowOnLaunch {
+            closeSettingsWindows()
+        }
+
         if wasLaunchedAsLoginItem {
             model.reloadApplicationsInBackground()
         }
+    }
+
+    private func closeSettingsWindows() {
+        NSApp.windows
+            .filter { !($0 is StartMenuPanel) }
+            .forEach { $0.close() }
     }
 
     private var wasLaunchedAsLoginItem: Bool {

@@ -225,11 +225,7 @@ final class StartMenuModel: ObservableObject {
                 guard let self else { return }
 
                 if let error {
-                    self.launchError = String.localizedStringWithFormat(
-                        String(localized: "Could not open %@: %@"),
-                        application.name,
-                        error.localizedDescription
-                    )
+                    self.launchError = "Could not open \(application.name): \(error.localizedDescription)"
                     return
                 }
 

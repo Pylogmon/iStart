@@ -5,7 +5,6 @@
 "Add Folder" = "Add Folder";
 "Add your user Applications folder to index Chrome PWA apps in sandbox mode." = "Add your user Applications folder to index Chrome PWA apps in sandbox mode.";
 "Additional application folders" = "Additional application folders";
-"Application folders" = "Application folders";
 "Back" = "Back";
 "Best match" = "Best match";
 "Cancel" = "Cancel";
@@ -16,7 +15,6 @@
 "Choose a folder that contains applications, such as your Applications folder." = "Choose a folder that contains applications, such as your Applications folder.";
 "Choose a global keyboard shortcut for opening iStart from anywhere." = "Choose a global keyboard shortcut for opening iStart from anywhere.";
 "Could not add application folder: %@" = "Could not add application folder: %@";
-"Could not open %@: %@" = "Could not open %@: %@";
 "Could not update Open at Login: %@" = "Could not update Open at Login: %@";
 "Global shortcut is active." = "Global shortcut is active.";
 "Go to System Settings" = "Go to System Settings";
@@ -55,7 +53,6 @@
 "Show recommended section" = "Show recommended section";
 "Shortcut" = "Shortcut";
 "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d." = "Shortcut could not be registered. It may already be used by macOS or another app. OSStatus %d.";
-"Shortcuts" = "Shortcuts";
 "Show iStart" = "Show iStart";
 "Show Settings window at launch" = "Show Settings window at launch";
 "Show Start Menu" = "Show Start Menu";

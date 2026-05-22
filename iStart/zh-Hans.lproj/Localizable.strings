@@ -39,6 +39,7 @@
 "Pinned" = "已固定";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "下次显示开始菜单时，固定应用会回到默认集合。";
 "Quit iStart" = "退出 iStart";
+"Application folders" = "应用程序文件夹";
 "Recently opened" = "最近打开";
 "Recent apps saved" = "保存最近打开应用";
 "Recommended" = "推荐";

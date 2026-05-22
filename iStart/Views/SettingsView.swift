@@ -40,33 +40,6 @@ struct GeneralSettingsPane: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
-                Stepper(value: recentApplicationLimit, in: StartMenuStorage.recentApplicationLimitRange) {
-                    LabeledContent("Recent apps saved") {
-                        Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
-            }
-            header: {
-                Text("Start Menu")
-            }
-            footer: {
-                Text("When turned off, iStart opens to the home view every time.")
-            }
-
-            Section {
-                Toggle("Show Menu Bar Extra", isOn: $showsMenuBarExtra)
-            }
-            header: {
-                Text("Menu Bar")
-            }
-            footer: {
-                Text("When hidden, use the Dock icon or App menu to open iStart.")
-            }
-
-            Section {
                 Toggle("Open at Login", isOn: launchesAtLogin)
 
                 if let message = model.loginItemStatus.message {
@@ -87,6 +60,33 @@ struct GeneralSettingsPane: View {
             }
             footer: {
                 Text("When iStart opens at login, it runs in the background without showing the Start menu.")
+            }
+            
+            Section {
+                Toggle("Show Menu Bar Extra", isOn: $showsMenuBarExtra)
+            }
+            header: {
+                Text("Menu Bar")
+            }
+            footer: {
+                Text("When hidden, use the Dock icon or App menu to open iStart.")
+            }
+
+            Section {
+                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+                Stepper(value: recentApplicationLimit, in: StartMenuStorage.recentApplicationLimitRange) {
+                    LabeledContent("Recent apps saved") {
+                        Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
+            }
+            header: {
+                Text("Start Menu")
+            }
+            footer: {
+                Text("When turned off, iStart opens to the home view every time.")
             }
         }
         .formStyle(.grouped)

@@ -9,20 +9,26 @@ struct iStartApp: App {
 
     var body: some Scene {
         MenuBarExtra("iStart", systemImage: "square.grid.3x3.fill", isInserted: $showsMenuBarExtra) {
-            Button("Show Start Menu") {
+            Button {
                 appDelegate.showStartMenu()
+            } label: {
+                Label("Show Start Menu",systemImage: "square.grid.3x3.fill")
             }
             .keyboardShortcut(.space, modifiers: .command)
 
-            Button("Settings") {
+            Button {
                 appDelegate.showSettings()
+            } label: {
+                Label("Open Settings", systemImage: "gearshape")
             }
             .keyboardShortcut(",", modifiers: .command)
 
             Divider()
 
-            Button("Quit iStart") {
+            Button {
                 NSApp.terminate(nil)
+            } label: {
+                Label("Quit iStart", systemImage: "xmark.rectangle")
             }
             .keyboardShortcut("q", modifiers: .command)
         }
@@ -30,8 +36,10 @@ struct iStartApp: App {
         .commands {
             CommandGroup(replacing: .newItem) { }
             CommandGroup(replacing: .appSettings) {
-                Button("Settings") {
+                Button {
                     appDelegate.showSettings()
+                } label: {
+                    Label(String(localized: "Settings") + "...", systemImage: "gearshape")
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }

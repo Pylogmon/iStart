@@ -189,6 +189,21 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func dockIconClickBehaviorDefaultsToOpenSettings() {
+        let storage = isolatedStorage()
+
+        #expect(storage.loadDockIconClickBehavior() == .openSettings)
+    }
+
+    @MainActor
+    @Test func dockIconClickBehaviorPersistsSelectedValue() {
+        let storage = isolatedStorage()
+        storage.saveDockIconClickBehavior(.toggleStartMenu)
+
+        #expect(storage.loadDockIconClickBehavior() == .toggleStartMenu)
+    }
+
+    @MainActor
     @Test func presentationPreparationResetsSearchWhenStateRestoreIsDisabled() {
         let storage = isolatedStorage()
         storage.saveRestoresStartMenuState(false)

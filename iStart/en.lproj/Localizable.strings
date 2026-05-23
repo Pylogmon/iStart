@@ -12,10 +12,13 @@
 "Command Option Space" = "Command Option Space";
 "Command Space" = "Command Space";
 "Control Space" = "Control Space";
+"Choose what happens when clicking the Dock icon while iStart is already running." = "Choose what happens when clicking the Dock icon while iStart is already running.";
 "Choose a folder that contains applications, such as your Applications folder." = "Choose a folder that contains applications, such as your Applications folder.";
 "Choose a global keyboard shortcut for opening iStart from anywhere." = "Choose a global keyboard shortcut for opening iStart from anywhere.";
 "Could not add application folder: %@" = "Could not add application folder: %@";
 "Could not update Open at Login: %@" = "Could not update Open at Login: %@";
+"Dock" = "Dock";
+"Dock icon click" = "Dock icon click";
 "Global shortcut is active." = "Global shortcut is active.";
 "Go to System Settings" = "Go to System Settings";
 "General" = "General";
@@ -62,6 +65,7 @@
 "Spacebar" = "Spacebar";
 "Start Menu" = "Start Menu";
 "This removes your pinned app choices and restores the default pinned apps." = "This removes your pinned app choices and restores the default pinned apps.";
+"Toggle Start Menu" = "Toggle Start Menu";
 "Unpin from Start" = "Unpin from Start";
 "When hidden, use the Dock icon or App menu to open iStart." = "When hidden, use the Dock icon or App menu to open iStart.";
 "When turned off, iStart opens to the home view every time." = "When turned off, iStart opens to the home view every time.";

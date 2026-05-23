@@ -12,10 +12,13 @@
 "Command Option Space" = "Command Option 空格";
 "Command Space" = "Command 空格";
 "Control Space" = "Control 空格";
+"Choose what happens when clicking the Dock icon while iStart is already running." = "选择 iStart 已在运行时点击 Dock 图标会执行的操作。";
 "Choose a folder that contains applications, such as your Applications folder." = "选择包含应用的文件夹，例如你的 Applications 文件夹。";
 "Choose a global keyboard shortcut for opening iStart from anywhere." = "选择一个可在任何位置打开 iStart 的全局键盘快捷键。";
 "Could not add application folder: %@" = "无法添加应用文件夹：%@";
 "Could not update Open at Login: %@" = "无法更新开机启动：%@";
+"Dock" = "Dock";
+"Dock icon click" = "点击 Dock 图标";
 "Global shortcut is active." = "全局快捷键已启用。";
 "Go to System Settings" = "前往系统设置";
 "General" = "通用";
@@ -62,6 +65,7 @@
 "Spacebar" = "空格键";
 "Start Menu" = "开始菜单";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
+"Toggle Start Menu" = "打开/关闭开始菜单";
 "Unpin from Start" = "从开始菜单取消固定";
 "When hidden, use the Dock icon or App menu to open iStart." = "隐藏后，可通过 Dock 图标或应用菜单打开 iStart。";
 "When turned off, iStart opens to the home view every time." = "关闭后，iStart 每次都会打开到首页。";

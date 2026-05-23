@@ -75,6 +75,22 @@ struct GeneralSettingsPane: View {
             }
 
             Section {
+                Picker("Dock icon click", selection: $model.dockIconClickBehavior) {
+                    ForEach(DockIconClickBehavior.allCases) { behavior in
+                        Text(behavior.title)
+                            .tag(behavior)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            header: {
+                Text("Dock")
+            }
+            footer: {
+                Text("Choose what happens when clicking the Dock icon while iStart is already running.")
+            }
+
+            Section {
                 Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
                 Stepper(value: recentApplicationLimit, in: StartMenuStorage.recentApplicationLimitRange) {
                     LabeledContent("Recent apps saved") {

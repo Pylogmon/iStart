@@ -30,7 +30,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        toggleStartMenu()
+        switch resolveModel().dockIconClickBehavior {
+        case .openSettings:
+            showSettings()
+        case .toggleStartMenu:
+            toggleStartMenu()
+        }
         return false
     }
 

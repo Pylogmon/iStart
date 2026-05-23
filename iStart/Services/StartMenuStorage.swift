@@ -12,6 +12,7 @@ struct StartMenuStorage {
         static let showsRecommendedSection = "showsRecommendedSection"
         static let showSettingsAtLaunch = "showSettingsAtLaunch"
         static let restoresStartMenuState = "restoresStartMenuState"
+        static let dockIconClickBehavior = "dockIconClickBehavior"
         static let recentApplicationLimit = "recentApplicationLimit"
         static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
     }
@@ -86,6 +87,19 @@ struct StartMenuStorage {
 
     func saveRestoresStartMenuState(_ restoresStartMenuState: Bool) {
         defaults.set(restoresStartMenuState, forKey: Keys.restoresStartMenuState)
+    }
+
+    func loadDockIconClickBehavior() -> DockIconClickBehavior {
+        guard let rawValue = defaults.string(forKey: Keys.dockIconClickBehavior),
+              let behavior = DockIconClickBehavior(rawValue: rawValue) else {
+            return .openSettings
+        }
+
+        return behavior
+    }
+
+    func saveDockIconClickBehavior(_ behavior: DockIconClickBehavior) {
+        defaults.set(behavior.rawValue, forKey: Keys.dockIconClickBehavior)
     }
 
     func loadHotKey() -> HotKey {

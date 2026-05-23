@@ -28,6 +28,11 @@ final class StartMenuModel: ObservableObject {
             storage.saveRestoresStartMenuState(restoresStartMenuState)
         }
     }
+    @Published var dockIconClickBehavior: DockIconClickBehavior {
+        didSet {
+            storage.saveDockIconClickBehavior(dockIconClickBehavior)
+        }
+    }
     @Published private(set) var recentApplicationLimit: Int
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
@@ -58,6 +63,7 @@ final class StartMenuModel: ObservableObject {
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
         self.showSettingsAtLaunch = storage.loadShowSettingsAtLaunch()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
+        self.dockIconClickBehavior = storage.loadDockIconClickBehavior()
         self.recentApplicationLimit = storage.loadRecentApplicationLimit()
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)

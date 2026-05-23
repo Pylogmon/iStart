@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             self.installHotKeyHandler()
             self.registerCurrentHotKey()
-            self.presentInitialStartMenuIfNeeded()
+            self.presentSettingsWindowIfNeeded()
         }
     }
 
@@ -148,17 +148,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         windowController = controller
         return controller
     }
-
-    private func presentInitialStartMenuIfNeeded() {
-        let model = resolveModel()
-        model.refreshLoginItemStatus()
-
-        if wasLaunchedAsLoginItem {
-            model.reloadApplicationsInBackground()
-            return
+    
+    private func presentSettingsWindowIfNeeded() {
+        if resolveModel().showSettingsAtLaunch {
+            self.showSettings()
         }
-
-        resolveWindowController().showAndFocusSearch()
     }
 
     private var wasLaunchedAsLoginItem: Bool {

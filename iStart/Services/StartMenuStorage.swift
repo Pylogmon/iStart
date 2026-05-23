@@ -10,6 +10,7 @@ struct StartMenuStorage {
         static let recentApplicationIDs = "recentApplicationIDs"
         static let hotKey = "hotKey"
         static let showsRecommendedSection = "showsRecommendedSection"
+        static let showSettingsAtLaunch = "showSettingsAtLaunch"
         static let restoresStartMenuState = "restoresStartMenuState"
         static let recentApplicationLimit = "recentApplicationLimit"
         static let applicationSearchDirectoryBookmarks = "applicationSearchDirectoryBookmarks"
@@ -61,6 +62,18 @@ struct StartMenuStorage {
 
     func saveShowsRecommendedSection(_ showsRecommendedSection: Bool) {
         defaults.set(showsRecommendedSection, forKey: Keys.showsRecommendedSection)
+    }
+    
+    func loadShowSettingsAtLaunch() -> Bool {
+        guard defaults.object(forKey: Keys.showSettingsAtLaunch) != nil else {
+            return true
+        }
+
+        return defaults.bool(forKey: Keys.showSettingsAtLaunch)
+    }
+    
+    func saveShowSettingsAtLaunch(_ showSettingsAtLaunch: Bool) {
+        defaults.set(showSettingsAtLaunch, forKey: Keys.showSettingsAtLaunch)
     }
 
     func loadRestoresStartMenuState() -> Bool {

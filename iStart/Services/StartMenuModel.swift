@@ -13,6 +13,11 @@ final class StartMenuModel: ObservableObject {
             storage.saveHotKey(hotKey)
         }
     }
+    @Published var showSettingsAtLaunch: Bool {
+        didSet {
+            storage.saveShowSettingsAtLaunch(showSettingsAtLaunch)
+        }
+    }
     @Published var showsRecommendedSection: Bool {
         didSet {
             storage.saveShowsRecommendedSection(showsRecommendedSection)
@@ -51,6 +56,7 @@ final class StartMenuModel: ObservableObject {
         self.recentApplicationIDs = storage.loadRecentIDs()
         self.hotKey = storage.loadHotKey()
         self.showsRecommendedSection = storage.loadShowsRecommendedSection()
+        self.showSettingsAtLaunch = storage.loadShowSettingsAtLaunch()
         self.restoresStartMenuState = storage.loadRestoresStartMenuState()
         self.recentApplicationLimit = storage.loadRecentApplicationLimit()
         self.loginItemStatus = loginItemManager.status

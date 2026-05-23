@@ -54,12 +54,14 @@ struct GeneralSettingsPane: View {
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                
+                Toggle("Show Settings at Launch", isOn: $model.showSettingsAtLaunch)
             }
             header: {
                 Text("Login")
             }
             footer: {
-                Text("When iStart opens at login, it runs in the background without showing the Start menu.")
+                Text("When turned off, iStart will launch silently without showing settings window.")
             }
             
             Section {

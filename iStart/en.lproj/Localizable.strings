@@ -58,13 +58,14 @@
 "Show iStart" = "Show iStart";
 "Show Menu Bar Extra" = "Show Menu Bar Extra";
 "Show Start Menu" = "Show Start Menu";
+"Show Settings at Launch" = "Show Settings at Launch";
 "Spacebar" = "Spacebar";
 "Start Menu" = "Start Menu";
 "This removes your pinned app choices and restores the default pinned apps." = "This removes your pinned app choices and restores the default pinned apps.";
 "Unpin from Start" = "Unpin from Start";
 "When hidden, use the Dock icon or App menu to open iStart." = "When hidden, use the Dock icon or App menu to open iStart.";
-"When iStart opens at login, it runs in the background without showing the Start menu." = "When iStart opens at login, it runs in the background without showing the Start menu.";
 "When turned off, iStart opens to the home view every time." = "When turned off, iStart opens to the home view every time.";
+"When turned off, iStart will launch silently without showing settings window." = "When turned off, iStart will launch silently without showing settings window.";
 "%lld apps" = "%lld apps";
 "%lld apps indexed" = "%lld apps indexed";
 "%lld results" = "%lld results";

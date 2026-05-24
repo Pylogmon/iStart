@@ -1,4 +1,3 @@
-import Carbon.HIToolbox
 import Defaults
 import Foundation
 import Testing
@@ -153,21 +152,28 @@ struct iStartTests {
     }
 
     @MainActor
-    @Test func hotKeyPersists() {
+    @Test func hotKeyDataLoads() throws {
         let defaults = isolatedDefaults()
-        defaults[.hotKey] = .commandOptionSpace
+        let data = try JSONEncoder().encode(HotKey.optionSpace)
+        defaults.set(data, forKey: Defaults.Keys.hotKey.name)
 
-        #expect(Defaults.loadHotKey(from: defaults) == .commandOptionSpace)
+        #expect(Defaults.loadHotKey(from: defaults) == .optionSpace)
     }
 
     @MainActor
-    @Test func customHotKeyPersists() {
+    @Test func unsupportedHotKeyFallsBackToDefault() throws {
         let defaults = isolatedDefaults()
-        let hotKey = HotKey.recorded(keyCode: 35, carbonModifiers: cmdKey | shiftKey, keyEquivalent: "p")
+        let hotKey = HotKey(
+            rawValue: "recorded:35:768:p",
+            title: "Command Shift P",
+            keyCode: 35,
+            carbonModifiers: 768
+        )
 
-        defaults[.hotKey] = hotKey
+        let data = try JSONEncoder().encode(hotKey)
+        defaults.set(data, forKey: Defaults.Keys.hotKey.name)
 
-        #expect(Defaults.loadHotKey(from: defaults) == hotKey)
+        #expect(Defaults.loadHotKey(from: defaults) == .optionSpace)
     }
 
     @MainActor

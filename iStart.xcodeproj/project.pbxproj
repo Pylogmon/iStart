@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B5E8A1022FB9200000A1B2C3 /* Settings in Frameworks */ = {isa = PBXBuildFile; productRef = B5E8A1012FB9200000A1B2C3 /* Settings */; };
+		B5E8A1052FB9300000A1B2C3 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = B5E8A1042FB9300000A1B2C3 /* Defaults */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5E8A1052FB9300000A1B2C3 /* Defaults in Frameworks */,
 				B5E8A1022FB9200000A1B2C3 /* Settings in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -117,6 +119,7 @@
 			);
 			name = iStart;
 			packageProductDependencies = (
+				B5E8A1042FB9300000A1B2C3 /* Defaults */,
 				B5E8A1012FB9200000A1B2C3 /* Settings */,
 			);
 			productName = iStart;
@@ -203,6 +206,7 @@
 			mainGroup = B49818752FB852E100DAA422;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				B5E8A1032FB9300000A1B2C3 /* XCRemoteSwiftPackageReference "Defaults" */,
 				B5E8A1002FB9200000A1B2C3 /* XCRemoteSwiftPackageReference "Settings" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -601,6 +605,14 @@
 				minimumVersion = 3.1.1;
 			};
 		};
+		B5E8A1032FB9300000A1B2C3 /* XCRemoteSwiftPackageReference "Defaults" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/Defaults.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -608,6 +620,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B5E8A1002FB9200000A1B2C3 /* XCRemoteSwiftPackageReference "Settings" */;
 			productName = Settings;
+		};
+		B5E8A1042FB9300000A1B2C3 /* Defaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5E8A1032FB9300000A1B2C3 /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = Defaults;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

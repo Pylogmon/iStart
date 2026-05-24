@@ -1,14 +1,15 @@
 import AppKit
+import Defaults
 import SwiftUI
 
 @main
 struct iStartApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = AppDependencies.startMenuModel
-    @AppStorage(StartMenuStorage.showsMenuBarExtraDefaultsKey) private var showsMenuBarExtra = true
+    @Default(.showsMenuBarExtra) private var showsMenuBarExtra
 
     var body: some Scene {
-        MenuBarExtra("iStart", systemImage: "square.grid.3x3.fill", isInserted: $showsMenuBarExtra) {
+        MenuBarExtra("iStart", systemImage: "square.grid.3x3.fill", isInserted: menuBarExtraInsertion) {
             Button {
                 appDelegate.showStartMenu()
             } label: {
@@ -52,6 +53,20 @@ struct iStartApp: App {
             }
         }
         .environmentObject(model)
+    }
+
+    private var menuBarExtraInsertion: Binding<Bool> {
+        Binding {
+            showsMenuBarExtra
+        } set: { isInserted in
+            guard showsMenuBarExtra != isInserted else { return }
+
+            DispatchQueue.main.async {
+                guard showsMenuBarExtra != isInserted else { return }
+
+                showsMenuBarExtra = isInserted
+            }
+        }
     }
 }
 

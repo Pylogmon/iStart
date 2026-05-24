@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import Defaults
 import Foundation
 
 final class StartMenuModel: ObservableObject {
@@ -10,27 +11,27 @@ final class StartMenuModel: ObservableObject {
     @Published var launchError: String?
     @Published var hotKey: HotKey {
         didSet {
-            storage.saveHotKey(hotKey)
+            defaults[.hotKey] = hotKey
         }
     }
     @Published var showSettingsAtLaunch: Bool {
         didSet {
-            storage.saveShowSettingsAtLaunch(showSettingsAtLaunch)
+            defaults[.showSettingsAtLaunch] = showSettingsAtLaunch
         }
     }
     @Published var showsRecommendedSection: Bool {
         didSet {
-            storage.saveShowsRecommendedSection(showsRecommendedSection)
+            defaults[.showsRecommendedSection] = showsRecommendedSection
         }
     }
     @Published var restoresStartMenuState: Bool {
         didSet {
-            storage.saveRestoresStartMenuState(restoresStartMenuState)
+            defaults[.restoresStartMenuState] = restoresStartMenuState
         }
     }
     @Published var dockIconClickBehavior: DockIconClickBehavior {
         didSet {
-            storage.saveDockIconClickBehavior(dockIconClickBehavior)
+            defaults[.dockIconClickBehavior] = dockIconClickBehavior
         }
     }
     @Published private(set) var recentApplicationLimit: Int
@@ -42,29 +43,29 @@ final class StartMenuModel: ObservableObject {
     @Published private(set) var homeResetToken = UUID()
 
     private var scanner: ApplicationScanner
-    private let storage: StartMenuStorage
+    private let defaults: UserDefaults
     private let loginItemManager: LoginItemManaging
     private var isReloadingApplications = false
 
     init(
         scanner: ApplicationScanner = ApplicationScanner(),
-        storage: StartMenuStorage = StartMenuStorage(),
+        defaults: UserDefaults = .standard,
         loginItemManager: LoginItemManaging = LoginItemService()
     ) {
         var scanner = scanner
-        let applicationSearchDirectoryBookmarks = storage.loadApplicationSearchDirectoryBookmarks()
+        let applicationSearchDirectoryBookmarks = defaults[.applicationSearchDirectoryBookmarks]
         scanner.applicationDirectoryBookmarkData = applicationSearchDirectoryBookmarks
         self.scanner = scanner
-        self.storage = storage
+        self.defaults = defaults
         self.loginItemManager = loginItemManager
-        self.pinnedApplicationIDs = storage.loadPinnedIDs()
-        self.recentApplicationIDs = storage.loadRecentIDs()
-        self.hotKey = storage.loadHotKey()
-        self.showsRecommendedSection = storage.loadShowsRecommendedSection()
-        self.showSettingsAtLaunch = storage.loadShowSettingsAtLaunch()
-        self.restoresStartMenuState = storage.loadRestoresStartMenuState()
-        self.dockIconClickBehavior = storage.loadDockIconClickBehavior()
-        self.recentApplicationLimit = storage.loadRecentApplicationLimit()
+        self.pinnedApplicationIDs = defaults[.pinnedApplicationIDs]
+        self.recentApplicationIDs = defaults[.recentApplicationIDs]
+        self.hotKey = Defaults.loadHotKey(from: defaults)
+        self.showsRecommendedSection = defaults[.showsRecommendedSection]
+        self.showSettingsAtLaunch = defaults[.showSettingsAtLaunch]
+        self.restoresStartMenuState = defaults[.restoresStartMenuState]
+        self.dockIconClickBehavior = defaults[.dockIconClickBehavior]
+        self.recentApplicationLimit = Defaults.clampedRecentApplicationLimit(defaults[.recentApplicationLimit])
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
         self.recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
@@ -133,7 +134,7 @@ final class StartMenuModel: ObservableObject {
 
         recentApplicationLimit = limit
         trimRecentApplications()
-        storage.saveRecentApplicationLimit(limit)
+        defaults[.recentApplicationLimit] = limit
     }
 
     func reloadApplications() {
@@ -158,7 +159,7 @@ final class StartMenuModel: ObservableObject {
                 includingResourceValuesForKeys: nil,
                 relativeTo: nil
             )
-            var bookmarks = storage.loadApplicationSearchDirectoryBookmarks()
+            var bookmarks = defaults[.applicationSearchDirectoryBookmarks]
             let existingURLs = Self.applicationSearchDirectoryURLs(from: bookmarks)
             guard !existingURLs.contains(where: { $0.standardizedFileURL == url.standardizedFileURL }) else { return }
 
@@ -174,7 +175,7 @@ final class StartMenuModel: ObservableObject {
     }
 
     func removeApplicationSearchDirectory(_ directory: URL) {
-        let keptBookmarks = storage.loadApplicationSearchDirectoryBookmarks().filter { bookmarkData in
+        let keptBookmarks = defaults[.applicationSearchDirectoryBookmarks].filter { bookmarkData in
             var isStale = false
             guard let url = try? URL(
                 resolvingBookmarkData: bookmarkData,
@@ -259,7 +260,12 @@ final class StartMenuModel: ObservableObject {
             pinnedApplicationIDs.append(application.id)
         }
 
-        storage.savePinnedIDs(pinnedApplicationIDs)
+        defaults[.pinnedApplicationIDs] = pinnedApplicationIDs
+    }
+
+    func resetPinnedApplications() {
+        pinnedApplicationIDs.removeAll()
+        defaults.removeObject(forKey: Defaults.Keys.pinnedApplicationIDs.name)
     }
 
     func movePinnedApplication(_ source: InstalledApplication, toPositionOf destination: InstalledApplication) {
@@ -277,7 +283,7 @@ final class StartMenuModel: ObservableObject {
         orderedIDs.insert(source.id, at: destinationIndex)
 
         pinnedApplicationIDs = orderedIDs
-        storage.savePinnedIDs(orderedIDs)
+        defaults[.pinnedApplicationIDs] = orderedIDs
     }
 
     private var defaultPinnedApplications: [InstalledApplication] {
@@ -317,11 +323,11 @@ final class StartMenuModel: ObservableObject {
 
     private func trimRecentApplications() {
         recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
-        storage.saveRecentIDs(recentApplicationIDs, limit: recentApplicationLimit)
+        defaults[.recentApplicationIDs] = recentApplicationIDs
     }
 
     private func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
-        storage.saveApplicationSearchDirectoryBookmarks(bookmarks)
+        defaults[.applicationSearchDirectoryBookmarks] = bookmarks
         scanner.applicationDirectoryBookmarkData = bookmarks
         applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: bookmarks)
     }
@@ -343,10 +349,7 @@ final class StartMenuModel: ObservableObject {
     }
 
     private static func clampedRecentApplicationLimit(_ limit: Int) -> Int {
-        min(
-            max(limit, StartMenuStorage.recentApplicationLimitRange.lowerBound),
-            StartMenuStorage.recentApplicationLimitRange.upperBound
-        )
+        Defaults.clampedRecentApplicationLimit(limit)
     }
 }
 

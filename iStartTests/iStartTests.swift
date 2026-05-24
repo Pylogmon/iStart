@@ -1,4 +1,5 @@
 import Carbon.HIToolbox
+import Defaults
 import Foundation
 import Testing
 @testable import iStart
@@ -76,7 +77,7 @@ struct iStartTests {
         try makeApp(named: "Pixelmator Pro", bundleIdentifier: "com.pixelmatorteam.pixelmator.x", in: root)
         try makeApp(named: "Terminal", bundleIdentifier: "com.apple.Terminal", in: root)
 
-        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: isolatedDefaults())
         model.reloadApplications()
 
         model.searchText = "pixel"
@@ -92,7 +93,7 @@ struct iStartTests {
         try makeApp(named: "微信", bundleIdentifier: "com.tencent.xinWeChat", in: root)
         try makeApp(named: "备忘录", bundleIdentifier: "com.apple.Notes", in: root)
 
-        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: isolatedDefaults())
         model.reloadApplications()
 
         model.searchText = "weixin"
@@ -108,7 +109,7 @@ struct iStartTests {
         try makeApp(named: "Visual Studio Code", bundleIdentifier: "com.microsoft.VSCode", in: root)
         try makeApp(named: "Calendar", bundleIdentifier: "com.example.calendar", in: root)
 
-        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: isolatedDefaults())
         model.reloadApplications()
 
         model.searchText = "vsc"
@@ -122,7 +123,7 @@ struct iStartTests {
         try makeApp(named: "My Notes", bundleIdentifier: "com.example.notes-helper", in: root)
         try makeApp(named: "Notes", bundleIdentifier: "com.apple.Notes", in: root)
 
-        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: isolatedStorage())
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: isolatedDefaults())
         model.reloadApplications()
 
         model.searchText = "note"
@@ -135,9 +136,9 @@ struct iStartTests {
         let root = try temporaryDirectory()
         try makeApp(named: "Alpha", bundleIdentifier: "com.example.alpha", in: root)
         try makeApp(named: "Beta", bundleIdentifier: "com.example.beta", in: root)
-        let storage = isolatedStorage()
+        let defaults = isolatedDefaults()
 
-        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: storage)
+        let model = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: defaults)
         model.reloadApplications()
 
         let alpha = try #require(model.applications.first { $0.name == "Alpha" })
@@ -145,7 +146,7 @@ struct iStartTests {
         model.togglePinned(beta)
         model.togglePinned(alpha)
 
-        let reloaded = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), storage: storage)
+        let reloaded = StartMenuModel(scanner: ApplicationScanner(searchRoots: [root]), defaults: defaults)
         reloaded.reloadApplications()
 
         #expect(reloaded.pinnedApplications.map(\.name) == ["Beta", "Alpha"])
@@ -153,20 +154,20 @@ struct iStartTests {
 
     @MainActor
     @Test func hotKeyPersists() {
-        let storage = isolatedStorage()
-        storage.saveHotKey(.commandOptionSpace)
+        let defaults = isolatedDefaults()
+        defaults[.hotKey] = .commandOptionSpace
 
-        #expect(storage.loadHotKey() == .commandOptionSpace)
+        #expect(Defaults.loadHotKey(from: defaults) == .commandOptionSpace)
     }
 
     @MainActor
     @Test func customHotKeyPersists() {
-        let storage = isolatedStorage()
+        let defaults = isolatedDefaults()
         let hotKey = HotKey.recorded(keyCode: 35, carbonModifiers: cmdKey | shiftKey, keyEquivalent: "p")
 
-        storage.saveHotKey(hotKey)
+        defaults[.hotKey] = hotKey
 
-        #expect(storage.loadHotKey() == hotKey)
+        #expect(Defaults.loadHotKey(from: defaults) == hotKey)
     }
 
     @MainActor
@@ -176,38 +177,51 @@ struct iStartTests {
         defaults.removePersistentDomain(forName: suiteName)
         defaults.set(HotKey.optionSpace.rawValue, forKey: "hotKey")
 
-        let storage = StartMenuStorage(defaults: defaults)
-
-        #expect(storage.loadHotKey() == .optionSpace)
+        #expect(Defaults.loadHotKey(from: defaults) == .optionSpace)
     }
 
     @MainActor
     @Test func startMenuStateRestoreDefaultsToEnabled() {
-        let storage = isolatedStorage()
+        let defaults = isolatedDefaults()
 
-        #expect(storage.loadRestoresStartMenuState())
+        #expect(defaults[.restoresStartMenuState])
     }
 
     @MainActor
     @Test func dockIconClickBehaviorDefaultsToOpenSettings() {
-        let storage = isolatedStorage()
+        let defaults = isolatedDefaults()
 
-        #expect(storage.loadDockIconClickBehavior() == .openSettings)
+        #expect(defaults[.dockIconClickBehavior] == .openSettings)
     }
 
     @MainActor
     @Test func dockIconClickBehaviorPersistsSelectedValue() {
-        let storage = isolatedStorage()
-        storage.saveDockIconClickBehavior(.toggleStartMenu)
+        let defaults = isolatedDefaults()
+        defaults[.dockIconClickBehavior] = .toggleStartMenu
 
-        #expect(storage.loadDockIconClickBehavior() == .toggleStartMenu)
+        #expect(defaults[.dockIconClickBehavior] == .toggleStartMenu)
+    }
+
+    @MainActor
+    @Test func menuBarExtraDefaultsToShown() {
+        let defaults = isolatedDefaults()
+
+        #expect(defaults[.showsMenuBarExtra])
+    }
+
+    @MainActor
+    @Test func menuBarExtraPersistsSelectedValue() {
+        let defaults = isolatedDefaults()
+        defaults[.showsMenuBarExtra] = false
+
+        #expect(!defaults[.showsMenuBarExtra])
     }
 
     @MainActor
     @Test func presentationPreparationResetsSearchWhenStateRestoreIsDisabled() {
-        let storage = isolatedStorage()
-        storage.saveRestoresStartMenuState(false)
-        let model = StartMenuModel(storage: storage)
+        let defaults = isolatedDefaults()
+        defaults[.restoresStartMenuState] = false
+        let model = StartMenuModel(defaults: defaults)
         model.searchText = "terminal"
         let originalHomeResetToken = model.homeResetToken
 
@@ -215,6 +229,18 @@ struct iStartTests {
 
         #expect(model.searchText.isEmpty)
         #expect(model.homeResetToken != originalHomeResetToken)
+    }
+
+    @MainActor
+    @Test func resetPinnedApplicationsUsesInjectedStorage() {
+        let defaults = isolatedDefaults()
+        defaults[.pinnedApplicationIDs] = ["alpha", "beta"]
+        let model = StartMenuModel(defaults: defaults)
+
+        model.resetPinnedApplications()
+
+        #expect(model.pinnedApplicationIDs.isEmpty)
+        #expect(defaults[.pinnedApplicationIDs].isEmpty)
     }
 
     private func makeApp(
@@ -259,10 +285,10 @@ struct iStartTests {
         return url
     }
 
-    private func isolatedStorage() -> StartMenuStorage {
+    private func isolatedDefaults() -> UserDefaults {
         let suiteName = "iStartTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
-        return StartMenuStorage(defaults: defaults)
+        return defaults
     }
 }

@@ -1,6 +1,7 @@
+import Defaults
 import Foundation
 
-enum DockIconClickBehavior: String, CaseIterable, Identifiable {
+enum DockIconClickBehavior: String, CaseIterable, Defaults.Serializable, Identifiable {
     case openSettings
     case toggleStartMenu
 

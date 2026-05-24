@@ -1,3 +1,4 @@
+import Defaults
 import SwiftUI
 
 struct SettingsView: View {
@@ -35,7 +36,7 @@ struct SettingsView: View {
 
 struct GeneralSettingsPane: View {
     @ObservedObject var model: StartMenuModel
-    @AppStorage(StartMenuStorage.showsMenuBarExtraDefaultsKey) private var showsMenuBarExtra = true
+    @Default(.showsMenuBarExtra) private var showsMenuBarExtra
 
     var body: some View {
         Form {
@@ -92,7 +93,7 @@ struct GeneralSettingsPane: View {
 
             Section {
                 Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
-                Stepper(value: recentApplicationLimit, in: StartMenuStorage.recentApplicationLimitRange) {
+                Stepper(value: recentApplicationLimit, in: Defaults.recentApplicationLimitRange) {
                     LabeledContent("Recent apps saved") {
                         Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
                             .foregroundStyle(.secondary)
@@ -362,8 +363,7 @@ struct ApplicationSettingsPane: View {
     }
 
     private func resetPinnedApps() {
-        model.pinnedApplicationIDs.removeAll()
-        StartMenuStorage().savePinnedIDs([])
+        model.resetPinnedApplications()
     }
 }
 

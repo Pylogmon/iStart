@@ -76,9 +76,7 @@ struct HotKey: Codable, Defaults.Serializable, Equatable, Identifiable {
 
     static let all: [HotKey] = [
         .commandSpace,
-        .optionSpace,
-        .controlSpace,
-        .commandOptionSpace
+        .optionSpace
     ]
 
     static func fromRawValue(_ rawValue: String) -> HotKey {

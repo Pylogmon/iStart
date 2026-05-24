@@ -15,7 +15,6 @@ struct iStartApp: App {
             } label: {
                 Label("Show Start Menu",systemImage: "square.grid.3x3.fill")
             }
-            .keyboardShortcut(.space, modifiers: .command)
 
             Button {
                 appDelegate.showSettings()
@@ -49,7 +48,6 @@ struct iStartApp: App {
                 Button("Show Start Menu") {
                     appDelegate.showStartMenu()
                 }
-                .keyboardShortcut(.space, modifiers: .command)
             }
         }
         .environmentObject(model)
@@ -61,6 +59,7 @@ struct iStartApp: App {
         } set: { isInserted in
             guard showsMenuBarExtra != isInserted else { return }
 
+            // MenuBarExtra can call this setter during SwiftUI updates; defer the Defaults write to avoid mutating state mid-update.
             DispatchQueue.main.async {
                 guard showsMenuBarExtra != isInserted else { return }
 

@@ -25,13 +25,11 @@ extension Defaults {
     static func loadHotKey(from defaults: UserDefaults = .standard) -> HotKey {
         if let data = defaults.data(forKey: Defaults.Keys.hotKey.name),
            let hotKey = try? JSONDecoder().decode(HotKey.self, from: data) {
-            defaults[.hotKey] = hotKey
             return hotKey
         }
 
         if let rawValue = defaults.string(forKey: Defaults.Keys.hotKey.name),
-           HotKey.all.contains(where: { $0.rawValue == rawValue }) {
-            let hotKey = HotKey.fromRawValue(rawValue)
+           let hotKey = HotKey.all.first(where: { $0.rawValue == rawValue }) {
             defaults[.hotKey] = hotKey
             return hotKey
         }

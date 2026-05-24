@@ -12,6 +12,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private static weak var sharedDelegate: AppDelegate?
 
+    deinit {
+        tearDownHotKeyHandling()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.sharedDelegate = self
         NSApp.setActivationPolicy(.regular)
@@ -27,6 +31,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.registerCurrentHotKey()
             self.presentSettingsWindowIfNeeded()
         }
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        tearDownHotKeyHandling()
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -160,13 +168,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private var wasLaunchedAsLoginItem: Bool {
-        guard let event = NSAppleEventManager.shared().currentAppleEvent else { return false }
-
-        return event.eventID == kAEOpenApplication
-            && event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue == keyAELaunchedAsLogInItem
-    }
-
     private func installHotKeyHandler() {
         guard eventHandlerRef == nil else { return }
 
@@ -216,6 +217,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let hotKeyRef {
             UnregisterEventHotKey(hotKeyRef)
             self.hotKeyRef = nil
+        }
+    }
+
+    private func tearDownHotKeyHandling() {
+        unregisterHotKey()
+
+        if let eventHandlerRef {
+            RemoveEventHandler(eventHandlerRef)
+            self.eventHandlerRef = nil
         }
     }
 

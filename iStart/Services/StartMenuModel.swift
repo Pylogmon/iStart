@@ -59,16 +59,17 @@ final class StartMenuModel: ObservableObject {
         self.defaults = defaults
         self.loginItemManager = loginItemManager
         self.pinnedApplicationIDs = defaults[.pinnedApplicationIDs]
-        self.recentApplicationIDs = defaults[.recentApplicationIDs]
+        let recentApplicationLimit = Defaults.clampedRecentApplicationLimit(defaults[.recentApplicationLimit])
+        self.recentApplicationIDs = Array(defaults[.recentApplicationIDs].prefix(recentApplicationLimit))
         self.hotKey = Defaults.loadHotKey(from: defaults)
         self.showsRecommendedSection = defaults[.showsRecommendedSection]
         self.showSettingsAtLaunch = defaults[.showSettingsAtLaunch]
         self.restoresStartMenuState = defaults[.restoresStartMenuState]
         self.dockIconClickBehavior = defaults[.dockIconClickBehavior]
-        self.recentApplicationLimit = Defaults.clampedRecentApplicationLimit(defaults[.recentApplicationLimit])
+        self.recentApplicationLimit = recentApplicationLimit
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
-        self.recentApplicationIDs = Array(recentApplicationIDs.prefix(recentApplicationLimit))
+        defaults[.recentApplicationIDs] = recentApplicationIDs
     }
 
     var filteredApplications: [InstalledApplication] {
@@ -129,7 +130,7 @@ final class StartMenuModel: ObservableObject {
     }
 
     func setRecentApplicationLimit(_ limit: Int) {
-        let limit = Self.clampedRecentApplicationLimit(limit)
+        let limit = Defaults.clampedRecentApplicationLimit(limit)
         guard recentApplicationLimit != limit else { return }
 
         recentApplicationLimit = limit
@@ -265,7 +266,7 @@ final class StartMenuModel: ObservableObject {
 
     func resetPinnedApplications() {
         pinnedApplicationIDs.removeAll()
-        defaults.removeObject(forKey: Defaults.Keys.pinnedApplicationIDs.name)
+        defaults[.pinnedApplicationIDs] = []
     }
 
     func movePinnedApplication(_ source: InstalledApplication, toPositionOf destination: InstalledApplication) {
@@ -348,9 +349,6 @@ final class StartMenuModel: ObservableObject {
         }
     }
 
-    private static func clampedRecentApplicationLimit(_ limit: Int) -> Int {
-        Defaults.clampedRecentApplicationLimit(limit)
-    }
 }
 
 private enum ApplicationSearchMatcher {

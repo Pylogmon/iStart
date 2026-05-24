@@ -83,7 +83,7 @@ struct StartMenuView: View {
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            TextField(String(localized: "Search for apps, settings, and documents"), text: $model.searchText)
+            TextField(String(localized: "Search for apps"), text: $model.searchText)
                 .textFieldStyle(.plain)
                 .focused($searchFocused)
                 .font(.system(size: 15))

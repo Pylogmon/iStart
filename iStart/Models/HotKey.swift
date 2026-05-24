@@ -14,10 +14,6 @@ struct HotKey: Codable, Defaults.Serializable, Equatable, Identifiable {
         String(localized: String.LocalizationValue(title))
     }
 
-    var displayTitle: String {
-        localizedTitle
-    }
-
     static let commandSpace = HotKey(rawValue: "commandSpace", title: "Command Space", keyCode: kVK_Space, carbonModifiers: cmdKey)
     static let optionSpace = HotKey(rawValue: "optionSpace", title: "Option Space", keyCode: kVK_Space, carbonModifiers: optionKey)
 

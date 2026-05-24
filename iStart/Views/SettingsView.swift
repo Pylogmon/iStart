@@ -233,7 +233,7 @@ private struct ShortcutInlineLabel: View {
     let hotKey: HotKey
 
     var body: some View {
-        Text(verbatim: hotKey.displayTitle)
+        Text(verbatim: hotKey.localizedTitle)
             .monospaced()
             .accessibilityLabel(Text(verbatim: hotKey.localizedTitle))
     }

@@ -51,6 +51,27 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func scannerFindsTopLevelApplicationSymlinks() throws {
+        let root = try temporaryDirectory()
+        let systemApplications = root.appendingPathComponent("SystemApplications", isDirectory: true)
+        try makeApp(named: "Safari", bundleIdentifier: "com.apple.Safari", in: systemApplications)
+        var safariSymlink = root.appendingPathComponent("Safari.app", isDirectory: true)
+        try FileManager.default.createSymbolicLink(
+            at: safariSymlink,
+            withDestinationURL: systemApplications.appendingPathComponent("Safari.app", isDirectory: true)
+        )
+        var resourceValues = URLResourceValues()
+        resourceValues.isHidden = true
+        try safariSymlink.setResourceValues(resourceValues)
+
+        let scanner = ApplicationScanner(searchRoots: [root])
+        let apps = scanner.scan()
+        print(apps)
+        #expect(apps.map(\.name) == ["Safari"])
+        #expect(apps.map(\.bundleIdentifier) == ["com.apple.Safari"])
+    }
+
+    @MainActor
     @Test func scannerPrefersLocalizedChineseApplicationDisplayName() throws {
         let root = try temporaryDirectory()
         try makeApp(

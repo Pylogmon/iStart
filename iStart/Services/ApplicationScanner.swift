@@ -14,16 +14,7 @@ struct ApplicationScanner {
         }
 
         for root in uniqueSearchRoots(searchRoots + authorizedRoots.map(\.url)) where FileManager.default.fileExists(atPath: root.path) {
-            let keys: [URLResourceKey] = [.isApplicationKey, .localizedNameKey, .isDirectoryKey]
-            guard let enumerator = FileManager.default.enumerator(
-                at: root,
-                includingPropertiesForKeys: keys,
-                options: [.skipsHiddenFiles, .skipsPackageDescendants]
-            ) else {
-                continue
-            }
-
-            for case let url as URL in enumerator {
+            for url in applicationURLs(in: root) {
                 guard url.pathExtension == "app" else { continue }
                 guard let application = makeApplication(from: url) else { continue }
 
@@ -36,6 +27,42 @@ struct ApplicationScanner {
         return appsByID.values.sorted {
             $0.name.localizedStandardCompare($1.name) == .orderedAscending
         }
+    }
+
+    private func applicationURLs(in root: URL) -> [URL] {
+        let keys: [URLResourceKey] = [.isApplicationKey, .isSymbolicLinkKey, .localizedNameKey, .isDirectoryKey]
+        var seenPaths: Set<String> = []
+        var appURLs: [URL] = []
+
+        func append(_ url: URL) {
+            let path = url.standardizedFileURL.path
+            guard seenPaths.insert(path).inserted else { return }
+            appURLs.append(url)
+        }
+
+        if let topLevelURLs = try? FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: keys,
+            options: []
+        ) {
+            topLevelURLs
+                .filter { $0.pathExtension == "app" }
+                .forEach(append)
+        }
+
+        guard let enumerator = FileManager.default.enumerator(
+            at: root,
+            includingPropertiesForKeys: keys,
+            options: [.skipsHiddenFiles, .skipsPackageDescendants]
+        ) else {
+            return appURLs
+        }
+
+        for case let url as URL in enumerator where url.pathExtension == "app" {
+            append(url)
+        }
+
+        return appURLs
     }
 
     private func makeApplication(from url: URL) -> InstalledApplication? {
@@ -91,7 +118,9 @@ struct ApplicationScanner {
             URL(fileURLWithPath: "/Applications", isDirectory: true),
             FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications", isDirectory: true),
             realHomeDirectory.appendingPathComponent("Applications", isDirectory: true),
-            URL(fileURLWithPath: "/System/Applications", isDirectory: true)
+            URL(fileURLWithPath: "/System/Applications", isDirectory: true),
+            URL(fileURLWithPath: "/System/Cryptexes/App/System/Applications", isDirectory: true),
+            URL(fileURLWithPath: "/System/Volumes/Preboot/Cryptexes/App/System/Applications", isDirectory: true)
         ] + FileManager.default.urls(for: .applicationDirectory, in: .userDomainMask)
     }
 }

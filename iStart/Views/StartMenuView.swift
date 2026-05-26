@@ -772,8 +772,8 @@ private struct ApplicationIconStack: View {
     var body: some View {
         ZStack {
             ForEach(Array(applications.enumerated()), id: \.element.id) { index, application in
-                AppIcon(path: application.path, size: 42)
-                    .frame(width: 42, height: 42)
+                AppIcon(path: application.path, size: 21)
+                    .frame(width: 21, height: 21)
                     .offset(index < offsets.count ? offsets[index] : .zero)
             }
         }

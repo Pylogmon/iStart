@@ -40,7 +40,7 @@ struct SearchResultRow: View {
     var body: some View {
         Button(action: onLaunch) {
             HStack(spacing: 12) {
-                AppIcon(path: application.path, size: 34)
+                AppIcon(path: application.path, size: 42)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: application.name)
@@ -60,7 +60,7 @@ struct SearchResultRow: View {
                     .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
             }
             .padding(.horizontal, 12)
-            .frame(height: 54)
+            .frame(height: 62)
             .background(rowBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -87,7 +87,7 @@ struct RecentApplicationRow: View {
     var body: some View {
         Button(action: onLaunch) {
             HStack(spacing: 10) {
-                AppIcon(path: application.path, size: 30)
+                AppIcon(path: application.path, size: 42)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: application.name)
@@ -102,7 +102,7 @@ struct RecentApplicationRow: View {
                 Spacer()
             }
             .padding(.horizontal, 12)
-            .frame(height: 52)
+            .frame(height: 62)
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)

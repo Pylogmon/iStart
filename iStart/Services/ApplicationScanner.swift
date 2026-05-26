@@ -69,6 +69,7 @@ struct ApplicationScanner {
         let info = AppInfoReader.infoDictionary(for: url)
         let localizedInfo = AppInfoReader.localizedInfoDictionary(for: url)
         let bundleIdentifier = info["CFBundleIdentifier"] as? String
+        let categoryIdentifier = info["LSApplicationCategoryType"] as? String
         let name = AppNameResolver.displayName(for: url, info: info, localizedInfo: localizedInfo)
         let id = bundleIdentifier ?? url.path
 
@@ -76,6 +77,7 @@ struct ApplicationScanner {
             id: id,
             name: name,
             bundleIdentifier: bundleIdentifier,
+            categoryIdentifier: categoryIdentifier,
             path: url.path,
             searchKeys: ApplicationSearchIndex.keys(name: name, bundleIdentifier: bundleIdentifier)
         )

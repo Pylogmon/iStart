@@ -4,6 +4,7 @@ struct InstalledApplication: Identifiable, Codable, Hashable {
     var id: String
     var name: String
     var bundleIdentifier: String?
+    var categoryIdentifier: String?
     var path: String
     var searchKeys: [ApplicationSearchKey] = []
 

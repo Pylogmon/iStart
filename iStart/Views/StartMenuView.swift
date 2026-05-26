@@ -15,6 +15,7 @@ struct StartMenuView: View {
 
     private let pinnedColumnCount = 6
     private let recommendedColumnCount = 2
+    private let categoryFolderAnimation = Animation.spring(response: 0.22, dampingFraction: 0.82)
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
     private var pinnedCollapsedLimit: Int {
         model.pinnedApplicationRowCount * pinnedColumnCount
@@ -108,9 +109,7 @@ struct StartMenuView: View {
                 .stroke(.white.opacity(0.22), lineWidth: 1)
         }
         .overlay {
-            if let selectedCategory {
-                categoryFolderOverlay(for: selectedCategory)
-            }
+            categoryFolderOverlay
         }
         .onAppear {
             allAppsDisplayMode = model.defaultAllAppsDisplayMode
@@ -355,7 +354,7 @@ struct StartMenuView: View {
                                 ApplicationCategoryCard(category: category) { application in
                                     launch(application)
                                 } onOpenCategory: {
-                                    withAnimation(.easeInOut(duration: 0.16)) {
+                                    withAnimation(categoryFolderAnimation) {
                                         selectedCategory = category
                                     }
                                 }
@@ -393,71 +392,87 @@ struct StartMenuView: View {
         }
     }
 
-    private func categoryFolderOverlay(for category: ApplicationCategory) -> some View {
+    private var categoryFolderOverlay: some View {
         ZStack {
-            Color.black.opacity(0.18)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.16)) {
-                        selectedCategory = nil
+            if let selectedCategory {
+                Color.black.opacity(0.18)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                    .onTapGesture {
+                        closeSelectedCategory()
                     }
+
+                categoryFolderPanel(for: selectedCategory)
+                    .transition(
+                        .asymmetric(
+                            insertion: .scale(scale: 0.82, anchor: .center).combined(with: .opacity),
+                            removal: .scale(scale: 0.96, anchor: .center).combined(with: .opacity)
+                        )
+                    )
+            }
+        }
+        .animation(categoryFolderAnimation, value: selectedCategory?.id)
+    }
+
+    private func categoryFolderPanel(for category: ApplicationCategory) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text(category.title)
+                    .font(.system(size: 18, weight: .semibold))
+                    .lineLimit(1)
+
+                Spacer()
+
+                Button {
+                    closeSelectedCategory()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .frame(width: 24, height: 24)
+                        .background(.thinMaterial, in: Circle())
                 }
+                .buttonStyle(.plain)
+            }
 
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Text(category.title)
-                        .font(.system(size: 18, weight: .semibold))
-                        .lineLimit(1)
+            ScrollView {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 14) {
+                    ForEach(category.applications) { application in
+                        Button {
+                            launch(application)
+                        } label: {
+                            VStack(spacing: 7) {
+                                AppIcon(path: application.path, size: 42)
 
-                    Spacer()
-
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.16)) {
-                            selectedCategory = nil
-                        }
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .frame(width: 24, height: 24)
-                            .background(.thinMaterial, in: Circle())
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                ScrollView {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 14) {
-                        ForEach(category.applications) { application in
-                            Button {
-                                launch(application)
-                            } label: {
-                                VStack(spacing: 7) {
-                                    AppIcon(path: application.path, size: 42)
-
-                                    Text(verbatim: application.name)
-                                        .font(.system(size: 11, weight: .medium))
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.center)
-                                        .frame(height: 28, alignment: .top)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 82)
-                                .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                Text(verbatim: application.name)
+                                    .font(.system(size: 11, weight: .medium))
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.center)
+                                    .frame(height: 28, alignment: .top)
                             }
-                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 82)
+                            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.vertical, 2)
                 }
-                .frame(maxHeight: 330)
+                .padding(.vertical, 2)
             }
-            .padding(20)
-            .frame(width: 430)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(.white.opacity(0.18), lineWidth: 1)
-            }
-            .shadow(color: .black.opacity(0.22), radius: 32, y: 16)
+            .frame(maxHeight: 330)
+        }
+        .padding(20)
+        .frame(width: 430)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(.white.opacity(0.18), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.22), radius: 32, y: 16)
+    }
+
+    private func closeSelectedCategory() {
+        withAnimation(.easeInOut(duration: 0.16)) {
+            selectedCategory = nil
         }
     }
 

@@ -92,6 +92,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             .frame(width: 540)
                     },
                     Settings.Pane(
+                        identifier: Settings.PaneIdentifier("startmenu"),
+                        title: String(localized: "Start Menu"),
+                        toolbarIcon: settingsIcon(systemName: "square.grid.3x3.fill")
+                    ) {
+                        StartMenuSettingsPane(model: model)
+                            .frame(width: 540)
+                    },
+                    Settings.Pane(
                         identifier: Settings.PaneIdentifier("shortcut"),
                         title: String(localized: "Shortcut"),
                         toolbarIcon: settingsIcon(systemName: "keyboard")

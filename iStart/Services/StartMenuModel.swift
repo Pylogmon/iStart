@@ -34,6 +34,12 @@ final class StartMenuModel: ObservableObject {
             defaults[.dockIconClickBehavior] = dockIconClickBehavior
         }
     }
+    @Published var defaultAllAppsDisplayMode: AllAppsDisplayMode {
+        didSet {
+            defaults[.defaultAllAppsDisplayMode] = defaultAllAppsDisplayMode
+        }
+    }
+    @Published private(set) var pinnedApplicationRowCount: Int
     @Published private(set) var recentApplicationLimit: Int
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
@@ -66,9 +72,13 @@ final class StartMenuModel: ObservableObject {
         self.showSettingsAtLaunch = defaults[.showSettingsAtLaunch]
         self.restoresStartMenuState = defaults[.restoresStartMenuState]
         self.dockIconClickBehavior = defaults[.dockIconClickBehavior]
+        self.defaultAllAppsDisplayMode = defaults[.defaultAllAppsDisplayMode]
+        let pinnedApplicationRowCount = Defaults.clampedPinnedApplicationRowCount(defaults[.pinnedApplicationRowCount])
+        self.pinnedApplicationRowCount = pinnedApplicationRowCount
         self.recentApplicationLimit = recentApplicationLimit
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
+        defaults[.pinnedApplicationRowCount] = pinnedApplicationRowCount
         defaults[.recentApplicationIDs] = recentApplicationIDs
     }
 
@@ -136,6 +146,14 @@ final class StartMenuModel: ObservableObject {
         recentApplicationLimit = limit
         trimRecentApplications()
         defaults[.recentApplicationLimit] = limit
+    }
+
+    func setPinnedApplicationRowCount(_ rowCount: Int) {
+        let rowCount = Defaults.clampedPinnedApplicationRowCount(rowCount)
+        guard pinnedApplicationRowCount != rowCount else { return }
+
+        pinnedApplicationRowCount = rowCount
+        defaults[.pinnedApplicationRowCount] = rowCount
     }
 
     func reloadApplications() {

@@ -230,6 +230,41 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func pinnedApplicationRowCountDefaultsToTwoRows() {
+        let defaults = isolatedDefaults()
+
+        #expect(defaults[.pinnedApplicationRowCount] == 2)
+    }
+
+    @MainActor
+    @Test func modelClampsAndPersistsPinnedApplicationRowCount() {
+        let defaults = isolatedDefaults()
+        let model = StartMenuModel(defaults: defaults)
+
+        model.setPinnedApplicationRowCount(99)
+
+        #expect(model.pinnedApplicationRowCount == Defaults.pinnedApplicationRowCountRange.upperBound)
+        #expect(defaults[.pinnedApplicationRowCount] == Defaults.pinnedApplicationRowCountRange.upperBound)
+    }
+
+    @MainActor
+    @Test func defaultAllAppsDisplayModeDefaultsToCategories() {
+        let defaults = isolatedDefaults()
+
+        #expect(defaults[.defaultAllAppsDisplayMode] == .categories)
+    }
+
+    @MainActor
+    @Test func defaultAllAppsDisplayModePersistsSelectedValue() {
+        let defaults = isolatedDefaults()
+        let model = StartMenuModel(defaults: defaults)
+
+        model.defaultAllAppsDisplayMode = .list
+
+        #expect(defaults[.defaultAllAppsDisplayMode] == .list)
+    }
+
+    @MainActor
     @Test func menuBarExtraDefaultsToShown() {
         let defaults = isolatedDefaults()
 

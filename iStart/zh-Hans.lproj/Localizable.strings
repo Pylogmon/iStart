@@ -1,4 +1,5 @@
 "All apps" = "所有应用";
+"All Apps Section" = "所有应用区域";
 "Applications" = "应用程序";
 "Business" = "商务";
 "Add" = "添加";
@@ -20,6 +21,8 @@
 "Could not update Open at Login: %@" = "无法更新开机启动：%@";
 "Dock" = "Dock";
 "Dock icon click" = "点击 Dock 图标";
+"Default all apps view" = "所有应用默认视图";
+"Default display rows" = "默认展示行数";
 "Developer Tools" = "开发者工具";
 "Education" = "教育";
 "Entertainment" = "娱乐";
@@ -56,6 +59,7 @@
 "Photography" = "摄影";
 "Pin to Start" = "固定到开始菜单";
 "Pinned" = "已固定";
+"Pinned Section" = "固定区域";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "下次显示开始菜单时，固定应用会回到默认集合。";
 "Productivity" = "效率";
 "Quit iStart" = "退出 iStart";
@@ -63,6 +67,7 @@
 "Recently opened" = "最近打开";
 "Recent apps saved" = "保存最近打开应用";
 "Recommended" = "推荐";
+"Recommended Section" = "推荐区域";
 "Reference" = "参考";
 "Rebuild Index" = "重建索引";
 "Reload" = "重新加载";
@@ -83,6 +88,8 @@
 "Social Networking" = "社交网络";
 "Sports" = "体育";
 "Start Menu" = "开始菜单";
+"The All apps menu button in Start Menu only changes the current view temporarily." = "开始菜单中“所有应用”的菜单按钮只会临时切换当前视图。";
+"The Start menu shows this many pinned rows before using Expand." = "开始菜单会先显示这些固定行数，更多内容可通过“展开”查看。";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Toggle Start Menu" = "打开/关闭开始菜单";
 "Travel" = "旅行";
@@ -95,3 +102,4 @@
 "%lld apps" = "%lld 个应用";
 "%lld apps indexed" = "已索引 %lld 个应用";
 "%lld results" = "%lld 个结果";
+"%lld rows" = "%lld 行";

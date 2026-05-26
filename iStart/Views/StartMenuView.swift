@@ -7,16 +7,26 @@ struct StartMenuView: View {
     var onOpenSettings: () -> Void = {}
     @State private var isPinnedExpanded = false
     @State private var isRecommendedExpanded = false
-    @State private var allAppsDisplayMode = AllAppsDisplayMode.categories
+    @State private var allAppsDisplayMode: AllAppsDisplayMode
     @State private var selectedCategory: ApplicationCategory?
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
     @FocusState private var searchFocused: Bool
 
-    private let pinnedCollapsedLimit = 12
+    private let pinnedColumnCount = 6
     private let recommendedCollapsedLimit = 2
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
     private let categoryColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
+    private var pinnedCollapsedLimit: Int {
+        model.pinnedApplicationRowCount * pinnedColumnCount
+    }
+
+    init(model: StartMenuModel, onOpenSettings: @escaping () -> Void = {}) {
+        self.model = model
+        self.onOpenSettings = onOpenSettings
+        _allAppsDisplayMode = State(initialValue: model.defaultAllAppsDisplayMode)
+    }
+
     private var searchResults: [InstalledApplication] {
         Array(model.filteredApplications.prefix(80))
     }
@@ -95,6 +105,7 @@ struct StartMenuView: View {
             }
         }
         .onAppear {
+            allAppsDisplayMode = model.defaultAllAppsDisplayMode
             model.focusSearch()
         }
         .onChange(of: model.homeResetToken) {
@@ -105,6 +116,7 @@ struct StartMenuView: View {
         }
         .onChange(of: model.searchFocusToken) {
             searchFocused = true
+            allAppsDisplayMode = model.defaultAllAppsDisplayMode
         }
         .onChange(of: model.searchText) {
             selectFirstSearchResult()
@@ -642,31 +654,6 @@ struct StartMenuView: View {
         "public.app-category.utilities",
         "public.app-category.video"
     ]
-}
-
-private enum AllAppsDisplayMode: String, CaseIterable, Identifiable {
-    case categories
-    case list
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .categories:
-            return String(localized: "Categories")
-        case .list:
-            return String(localized: "List")
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .categories:
-            return "square.grid.2x2"
-        case .list:
-            return "list.bullet"
-        }
-    }
 }
 
 private struct ApplicationCategory: Identifiable {

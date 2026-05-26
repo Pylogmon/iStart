@@ -1,4 +1,5 @@
 "All apps" = "All apps";
+"All Apps Section" = "All Apps Section";
 "Applications" = "Applications";
 "Business" = "Business";
 "Add" = "Add";
@@ -20,6 +21,8 @@
 "Could not update Open at Login: %@" = "Could not update Open at Login: %@";
 "Dock" = "Dock";
 "Dock icon click" = "Dock icon click";
+"Default all apps view" = "Default all apps view";
+"Default display rows" = "Default display rows";
 "Developer Tools" = "Developer Tools";
 "Education" = "Education";
 "Entertainment" = "Entertainment";
@@ -56,6 +59,7 @@
 "Photography" = "Photography";
 "Pin to Start" = "Pin to Start";
 "Pinned" = "Pinned";
+"Pinned Section" = "Pinned Section";
 "Pinned apps will fall back to the default set the next time the Start menu is shown." = "Pinned apps will fall back to the default set the next time the Start menu is shown.";
 "Productivity" = "Productivity";
 "Quit iStart" = "Quit iStart";
@@ -63,6 +67,7 @@
 "Recently opened" = "Recently opened";
 "Recent apps saved" = "Recent apps saved";
 "Recommended" = "Recommended";
+"Recommended Section" = "Recommended Section";
 "Reference" = "Reference";
 "Rebuild Index" = "Rebuild Index";
 "Reload" = "Reload";
@@ -83,6 +88,8 @@
 "Social Networking" = "Social Networking";
 "Sports" = "Sports";
 "Start Menu" = "Start Menu";
+"The All apps menu button in Start Menu only changes the current view temporarily." = "The All apps menu button in Start Menu only changes the current view temporarily.";
+"The Start menu shows this many pinned rows before using Expand." = "The Start menu shows this many pinned rows before using Expand.";
 "This removes your pinned app choices and restores the default pinned apps." = "This removes your pinned app choices and restores the default pinned apps.";
 "Toggle Start Menu" = "Toggle Start Menu";
 "Travel" = "Travel";
@@ -95,3 +102,4 @@
 "%lld apps" = "%lld apps";
 "%lld apps indexed" = "%lld apps indexed";
 "%lld results" = "%lld results";
+"%lld rows" = "%lld rows";

@@ -10,13 +10,21 @@ extension Defaults.Keys {
     static let showSettingsAtLaunch = Key<Bool>("showSettingsAtLaunch", default: true)
     static let restoresStartMenuState = Key<Bool>("restoresStartMenuState", default: true)
     static let dockIconClickBehavior = Key<DockIconClickBehavior>("dockIconClickBehavior", default: .openSettings)
+    static let pinnedApplicationRowCount = Key<Int>("pinnedApplicationRowCount", default: Defaults.defaultPinnedApplicationRowCount)
+    static let defaultAllAppsDisplayMode = Key<AllAppsDisplayMode>("defaultAllAppsDisplayMode", default: .categories)
     static let recentApplicationLimit = Key<Int>("recentApplicationLimit", default: Defaults.defaultRecentApplicationLimit)
     static let applicationSearchDirectoryBookmarks = Key<[Data]>("applicationSearchDirectoryBookmarks", default: [])
 }
 
 extension Defaults {
+    static let defaultPinnedApplicationRowCount = 2
+    static let pinnedApplicationRowCountRange = 1...6
     static let defaultRecentApplicationLimit = 8
     static let recentApplicationLimitRange = 0...50
+
+    static func clampedPinnedApplicationRowCount(_ rowCount: Int) -> Int {
+        min(max(rowCount, pinnedApplicationRowCountRange.lowerBound), pinnedApplicationRowCountRange.upperBound)
+    }
 
     static func clampedRecentApplicationLimit(_ limit: Int) -> Int {
         min(max(limit, recentApplicationLimitRange.lowerBound), recentApplicationLimitRange.upperBound)

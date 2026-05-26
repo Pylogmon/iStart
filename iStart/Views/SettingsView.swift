@@ -10,6 +10,11 @@ struct SettingsView: View {
                 .tabItem {
                     Label("General", systemImage: "gearshape")
                 }
+            
+            StartMenuSettingsPane(model: model)
+                .tabItem {
+                    Label("Start Menu", systemImage: "square.grid.3x3.fill")
+                }
 
             ShortcutSettingsPane(model: model, hotKeySelection: hotKeySelection)
                 .tabItem {
@@ -90,23 +95,6 @@ struct GeneralSettingsPane: View {
             footer: {
                 Text("Choose what happens when clicking the Dock icon while iStart is already running.")
             }
-
-            Section {
-                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
-                Stepper(value: recentApplicationLimit, in: Defaults.recentApplicationLimitRange) {
-                    LabeledContent("Recent apps saved") {
-                        Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
-            }
-            header: {
-                Text("Start Menu")
-            }
-            footer: {
-                Text("When turned off, iStart opens to the home view every time.")
-            }
         }
         .formStyle(.grouped)
         .padding(.horizontal, 24)
@@ -118,6 +106,88 @@ struct GeneralSettingsPane: View {
             model.launchesAtLogin
         } set: { launchesAtLogin in
             model.setLaunchesAtLogin(launchesAtLogin)
+        }
+    }
+
+    private var recentApplicationLimit: Binding<Int> {
+        Binding {
+            model.recentApplicationLimit
+        } set: { limit in
+            model.setRecentApplicationLimit(limit)
+        }
+    }
+}
+
+struct StartMenuSettingsPane: View {
+    @ObservedObject var model: StartMenuModel
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Restore last menu state", isOn: $model.restoresStartMenuState)
+            }
+            header: {
+                Text("Start Menu")
+            }
+            footer: {
+                Text("When turned off, iStart opens to the home view every time.")
+            }
+
+            Section {
+                Stepper(value: pinnedApplicationRowCount, in: Defaults.pinnedApplicationRowCountRange) {
+                    LabeledContent("Default display rows") {
+                        Text(String.localizedStringWithFormat(String(localized: "%lld rows"), Int64(model.pinnedApplicationRowCount)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            header: {
+                Text("Pinned Section")
+            }
+            footer: {
+                Text("The Start menu shows this many pinned rows before using Expand.")
+            }
+
+            Section {
+                Toggle("Show recommended section", isOn: $model.showsRecommendedSection)
+                Stepper(value: recentApplicationLimit, in: Defaults.recentApplicationLimitRange) {
+                    LabeledContent("Recent apps saved") {
+                        Text(String.localizedStringWithFormat(String(localized: "%lld apps"), Int64(model.recentApplicationLimit)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+            }
+            header: {
+                Text("Recommended Section")
+            }
+            
+            Section {
+                Picker("Default all apps view", selection: $model.defaultAllAppsDisplayMode) {
+                    ForEach(AllAppsDisplayMode.allCases) { mode in
+                        Label(mode.title, systemImage: mode.systemImage)
+                            .tag(mode)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            header: {
+                Text("All Apps Section")
+            }
+            footer: {
+                Text("The All apps menu button in Start Menu only changes the current view temporarily.")
+            }
+        }
+        .formStyle(.grouped)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
+    }
+
+    private var pinnedApplicationRowCount: Binding<Int> {
+        Binding {
+            model.pinnedApplicationRowCount
+        } set: { rowCount in
+            model.setPinnedApplicationRowCount(rowCount)
         }
     }
 

@@ -16,7 +16,6 @@ struct StartMenuView: View {
     private let pinnedColumnCount = 6
     private let recommendedColumnCount = 2
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
-    private let categoryColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
     private var pinnedCollapsedLimit: Int {
         model.pinnedApplicationRowCount * pinnedColumnCount
     }
@@ -55,6 +54,12 @@ struct StartMenuView: View {
             return lhs.id < rhs.id
         }
     }
+    private var allAppCategoryRows: [[ApplicationCategory]] {
+        stride(from: 0, to: allAppCategories.count, by: 4).map { startIndex in
+            let endIndex = min(startIndex + 4, allAppCategories.count)
+            return Array(allAppCategories[startIndex..<endIndex])
+        }
+    }
     private var visiblePinnedApplications: [InstalledApplication] {
         if isPinnedExpanded {
             return model.pinnedApplications
@@ -91,7 +96,7 @@ struct StartMenuView: View {
                 }
             }
             .padding(.horizontal, 34)
-            .padding(.bottom, 18)
+//            .padding(.bottom, 18)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
             footer
@@ -343,15 +348,35 @@ struct StartMenuView: View {
 
             switch allAppsDisplayMode {
             case .categories:
-                LazyVGrid(columns: categoryColumns, spacing: 12) {
-                    ForEach(allAppCategories) { category in
-                        ApplicationCategoryCard(category: category) { application in
-                            launch(application)
-                        } onOpenCategory: {
-                            withAnimation(.easeInOut(duration: 0.16)) {
-                                selectedCategory = category
+                LazyVStack(spacing: 12) {
+                    ForEach(Array(allAppCategoryRows.enumerated()), id: \.offset) { _, row in
+                        HStack(alignment: .top, spacing: 0) {
+                            ForEach(Array(row.enumerated()), id: \.element.id) { index, category in
+                                ApplicationCategoryCard(category: category) { application in
+                                    launch(application)
+                                } onOpenCategory: {
+                                    withAnimation(.easeInOut(duration: 0.16)) {
+                                        selectedCategory = category
+                                    }
+                                }
+
+                                if index < 3 {
+                                    Spacer(minLength: 10)
+                                }
+                            }
+
+                            if row.count < 4 {
+                                ForEach(row.count..<4, id: \.self) { index in
+                                    Color.clear
+                                        .frame(width: ApplicationCategoryLayout.cardSize)
+
+                                    if index < 3 {
+                                        Spacer(minLength: 10)
+                                    }
+                                }
                             }
                         }
+                        .frame(maxWidth: .infinity)
                     }
                 }
             case .list:
@@ -667,6 +692,10 @@ private struct ApplicationCategory: Identifiable {
     let applications: [InstalledApplication]
 }
 
+private enum ApplicationCategoryLayout {
+    static let cardSize: CGFloat = 150
+}
+
 private struct ApplicationCategoryCard: View {
     let category: ApplicationCategory
     let onLaunch: (InstalledApplication) -> Void
@@ -708,19 +737,15 @@ private struct ApplicationCategoryCard: View {
                 }
             }
             .frame(width: 92, height: 92, alignment: .topLeading)
-            .frame(width: 110, height: 110, alignment: .center)
+            .frame(width: ApplicationCategoryLayout.cardSize, height: ApplicationCategoryLayout.cardSize, alignment: .center)
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(.white.opacity(0.12), lineWidth: 1)
-            }
 
             Text(category.title)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity)
+        .frame(width: ApplicationCategoryLayout.cardSize)
         .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

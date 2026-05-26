@@ -6,6 +6,7 @@ struct ApplicationTile: View {
     let isPinned: Bool
     let onLaunch: () -> Void
     let onTogglePinned: () -> Void
+    @State private var isHovered = false
 
     var body: some View {
         Button(action: onLaunch) {
@@ -21,9 +22,21 @@ struct ApplicationTile: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 92)
+            .background {
+                if isHovered {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(.regularMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                }
+            }
             .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.12), value: isHovered)
         .contextMenu {
             Button(isPinned ? String(localized: "Unpin from Start") : String(localized: "Pin to Start"), action: onTogglePinned)
         }
@@ -64,7 +77,7 @@ struct SearchResultRow: View {
             .background(rowBackground)
             .overlay {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor.opacity(0.55) : Color.clear, lineWidth: 1)
+                    .stroke(isSelected ? Color.accentColor.opacity(0.55) : Color.primary.opacity(0.08), lineWidth: 1)
             }
         }
         .buttonStyle(.plain)
@@ -76,13 +89,14 @@ struct SearchResultRow: View {
     private var rowBackground: some View {
         RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
 struct RecentApplicationRow: View {
     let application: InstalledApplication
     let onLaunch: () -> Void
+    @State private var isHovered = false
 
     var body: some View {
         Button(action: onLaunch) {
@@ -103,9 +117,21 @@ struct RecentApplicationRow: View {
             }
             .padding(.horizontal, 12)
             .frame(height: 62)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .background {
+                if isHovered {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(.regularMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.12), value: isHovered)
     }
 }
 

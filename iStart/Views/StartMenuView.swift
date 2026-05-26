@@ -281,30 +281,12 @@ struct StartMenuView: View {
         application: InstalledApplication,
         iconLeadingPadding: CGFloat
     ) -> some View {
-        Button {
+        RecommendedApplicationRow(
+            application: application,
+            iconLeadingPadding: iconLeadingPadding
+        ) {
             launch(application)
-        } label: {
-            HStack(spacing: 10) {
-                AppIcon(path: application.path, size: 42)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: application.name)
-                        .font(.system(size: 13, weight: .medium))
-                        .lineLimit(1)
-
-                    Text("Recently opened")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-            }
-            .padding(.leading, iconLeadingPadding)
-            .padding(.trailing, 12)
-            .frame(height: 62)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
-        .buttonStyle(.plain)
     }
 
     private var searchResultsSection: some View {
@@ -354,9 +336,7 @@ struct StartMenuView: View {
                                 ApplicationCategoryCard(category: category) { application in
                                     launch(application)
                                 } onOpenCategory: {
-                                    withAnimation(categoryFolderAnimation) {
-                                        selectedCategory = category
-                                    }
+                                    openSelectedCategory(category)
                                 }
 
                                 if index < 3 {
@@ -395,12 +375,14 @@ struct StartMenuView: View {
     private var categoryFolderOverlay: some View {
         ZStack {
             if let selectedCategory {
-                Color.black.opacity(0.18)
-                    .ignoresSafeArea()
+                Rectangle()
+                    .fill(Color.black.opacity(0.18))
+                    .contentShape(Rectangle())
                     .transition(.opacity)
                     .onTapGesture {
                         closeSelectedCategory()
                     }
+                    .zIndex(0)
 
                 categoryFolderPanel(for: selectedCategory)
                     .transition(
@@ -409,9 +391,17 @@ struct StartMenuView: View {
                             removal: .scale(scale: 0.96, anchor: .center).combined(with: .opacity)
                         )
                     )
+                    .zIndex(1)
             }
         }
-        .animation(categoryFolderAnimation, value: selectedCategory?.id)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .allowsHitTesting(selectedCategory != nil)
+    }
+
+    private func openSelectedCategory(_ category: ApplicationCategory) {
+        withAnimation(categoryFolderAnimation) {
+            selectedCategory = category
+        }
     }
 
     private func categoryFolderPanel(for category: ApplicationCategory) -> some View {
@@ -471,7 +461,7 @@ struct StartMenuView: View {
     }
 
     private func closeSelectedCategory() {
-        withAnimation(.easeInOut(duration: 0.16)) {
+        withAnimation(categoryFolderAnimation) {
             selectedCategory = nil
         }
     }
@@ -753,7 +743,11 @@ private struct ApplicationCategoryCard: View {
             }
             .frame(width: 92, height: 92, alignment: .topLeading)
             .frame(width: ApplicationCategoryLayout.cardSize, height: ApplicationCategoryLayout.cardSize, alignment: .center)
-            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            }
 
             Text(category.title)
                 .font(.system(size: 13, weight: .medium))
@@ -784,6 +778,50 @@ private struct ApplicationIconStack: View {
             }
         }
         .frame(width: 42, height: 42)
+    }
+}
+
+private struct RecommendedApplicationRow: View {
+    let application: InstalledApplication
+    let iconLeadingPadding: CGFloat
+    let onLaunch: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: onLaunch) {
+            HStack(spacing: 10) {
+                AppIcon(path: application.path, size: 42)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: application.name)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+
+                    Text("Recently opened")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding(.leading, iconLeadingPadding)
+            .padding(.trailing, 12)
+            .frame(height: 62)
+            .background {
+                if isHovered {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(.regularMaterial)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                        }
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+        .animation(.easeInOut(duration: 0.12), value: isHovered)
     }
 }
 

@@ -39,7 +39,11 @@ iStart 把熟悉的“开始菜单”体验带到 macOS：按下全局快捷键�
 
 ## 安装
 
-1. 前往 [Releases](https://github.com/Pylogmon/iStart/releases) 页面下载最新的 `iStart.zip` 安装包。
+前往 [Releases](https://github.com/Pylogmon/iStart/releases) 页面下载最新的 `iStart.zip` 安装包。
+
+或者
+
+<a href="https://apps.apple.com/cn/app/istart-launcher/id6770065687"><img src="docs/mas_zh-cn.svg"></img></a>
 
 ## 使用
 

@@ -156,10 +156,18 @@ struct StartMenuSettingsPane: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                
+                Stepper(value: recommendedApplicationRowCount, in: Defaults.recommendedApplicationRowCountRange) {
+                    LabeledContent("Default display rows") {
+                        Text(String.localizedStringWithFormat(String(localized: "%lld rows"), Int64(model.recommendedApplicationRowCount)))
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             header: {
                 Text("Recommended Section")
+            }
+            footer: {
+                Text("The Start menu shows this many recommended rows before using Expand.")
             }
             
             Section {
@@ -188,6 +196,14 @@ struct StartMenuSettingsPane: View {
             model.pinnedApplicationRowCount
         } set: { rowCount in
             model.setPinnedApplicationRowCount(rowCount)
+        }
+    }
+
+    private var recommendedApplicationRowCount: Binding<Int> {
+        Binding {
+            model.recommendedApplicationRowCount
+        } set: { rowCount in
+            model.setRecommendedApplicationRowCount(rowCount)
         }
     }
 

@@ -90,6 +90,7 @@
 "Start Menu" = "开始菜单";
 "The All apps menu button in Start Menu only changes the current view temporarily." = "开始菜单中“所有应用”的菜单按钮只会临时切换当前视图。";
 "The Start menu shows this many pinned rows before using Expand." = "开始菜单会先显示这些固定行数，更多内容可通过“展开”查看。";
+"The Start menu shows this many recommended rows before using Expand." = "开始菜单会先显示这些推荐行数，更多内容可通过“展开”查看。";
 "This removes your pinned app choices and restores the default pinned apps." = "这会移除你选择的固定应用，并恢复默认固定应用。";
 "Toggle Start Menu" = "打开/关闭开始菜单";
 "Travel" = "旅行";

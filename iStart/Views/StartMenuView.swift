@@ -14,11 +14,14 @@ struct StartMenuView: View {
     @FocusState private var searchFocused: Bool
 
     private let pinnedColumnCount = 6
-    private let recommendedCollapsedLimit = 2
+    private let recommendedColumnCount = 2
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 6)
     private let categoryColumns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
     private var pinnedCollapsedLimit: Int {
         model.pinnedApplicationRowCount * pinnedColumnCount
+    }
+    private var recommendedCollapsedLimit: Int {
+        model.recommendedApplicationRowCount * recommendedColumnCount
     }
 
     init(model: StartMenuModel, onOpenSettings: @escaping () -> Void = {}) {
@@ -67,7 +70,7 @@ struct StartMenuView: View {
         return Array(model.recentApplications.prefix(recommendedCollapsedLimit))
     }
     private var recommendedGridHeight: CGFloat {
-        let rowCount = max(1, (visibleRecentApplications.count + 1) / 2)
+        let rowCount = max(1, (visibleRecentApplications.count + recommendedColumnCount - 1) / recommendedColumnCount)
         return CGFloat(rowCount * 62 + max(0, rowCount - 1) * 10)
     }
 

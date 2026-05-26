@@ -248,6 +248,24 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func recommendedApplicationRowCountDefaultsToOneRow() {
+        let defaults = isolatedDefaults()
+
+        #expect(defaults[.recommendedApplicationRowCount] == 1)
+    }
+
+    @MainActor
+    @Test func modelClampsAndPersistsRecommendedApplicationRowCount() {
+        let defaults = isolatedDefaults()
+        let model = StartMenuModel(defaults: defaults)
+
+        model.setRecommendedApplicationRowCount(99)
+
+        #expect(model.recommendedApplicationRowCount == Defaults.recommendedApplicationRowCountRange.upperBound)
+        #expect(defaults[.recommendedApplicationRowCount] == Defaults.recommendedApplicationRowCountRange.upperBound)
+    }
+
+    @MainActor
     @Test func defaultAllAppsDisplayModeDefaultsToCategories() {
         let defaults = isolatedDefaults()
 

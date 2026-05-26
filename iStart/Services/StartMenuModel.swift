@@ -40,6 +40,7 @@ final class StartMenuModel: ObservableObject {
         }
     }
     @Published private(set) var pinnedApplicationRowCount: Int
+    @Published private(set) var recommendedApplicationRowCount: Int
     @Published private(set) var recentApplicationLimit: Int
     @Published private(set) var loginItemStatus: LoginItemStatus
     @Published var loginItemError: String?
@@ -75,10 +76,13 @@ final class StartMenuModel: ObservableObject {
         self.defaultAllAppsDisplayMode = defaults[.defaultAllAppsDisplayMode]
         let pinnedApplicationRowCount = Defaults.clampedPinnedApplicationRowCount(defaults[.pinnedApplicationRowCount])
         self.pinnedApplicationRowCount = pinnedApplicationRowCount
+        let recommendedApplicationRowCount = Defaults.clampedRecommendedApplicationRowCount(defaults[.recommendedApplicationRowCount])
+        self.recommendedApplicationRowCount = recommendedApplicationRowCount
         self.recentApplicationLimit = recentApplicationLimit
         self.loginItemStatus = loginItemManager.status
         self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
         defaults[.pinnedApplicationRowCount] = pinnedApplicationRowCount
+        defaults[.recommendedApplicationRowCount] = recommendedApplicationRowCount
         defaults[.recentApplicationIDs] = recentApplicationIDs
     }
 
@@ -154,6 +158,14 @@ final class StartMenuModel: ObservableObject {
 
         pinnedApplicationRowCount = rowCount
         defaults[.pinnedApplicationRowCount] = rowCount
+    }
+
+    func setRecommendedApplicationRowCount(_ rowCount: Int) {
+        let rowCount = Defaults.clampedRecommendedApplicationRowCount(rowCount)
+        guard recommendedApplicationRowCount != rowCount else { return }
+
+        recommendedApplicationRowCount = rowCount
+        defaults[.recommendedApplicationRowCount] = rowCount
     }
 
     func reloadApplications() {

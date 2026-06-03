@@ -38,9 +38,9 @@ extension Defaults {
     }
 
     static func loadHotKey(from defaults: UserDefaults = .standard) -> HotKey {
-        if let data = defaults.data(forKey: Defaults.Keys.hotKey.name),
-           let decodedHotKey = try? JSONDecoder().decode(HotKey.self, from: data),
+        if let decodedHotKey = loadStoredHotKey(from: defaults),
            let hotKey = HotKey.all.first(where: { $0.rawValue == decodedHotKey.rawValue }) {
+            storeHotKey(hotKey, in: defaults)
             return hotKey
         }
 
@@ -54,9 +54,24 @@ extension Defaults {
         return .optionSpace
     }
 
-    private static func storeHotKey(_ hotKey: HotKey, in defaults: UserDefaults) {
-        if let data = try? JSONEncoder().encode(hotKey) {
-            defaults.set(data, forKey: Defaults.Keys.hotKey.name)
+    private static func loadStoredHotKey(from defaults: UserDefaults) -> HotKey? {
+        let key = Defaults.Keys.hotKey.name
+
+        if let jsonString = defaults.string(forKey: key),
+           let data = jsonString.data(using: .utf8),
+           let hotKey = try? JSONDecoder().decode(HotKey.self, from: data) {
+            return hotKey
         }
+
+        if let data = defaults.data(forKey: key),
+           let hotKey = try? JSONDecoder().decode(HotKey.self, from: data) {
+            return hotKey
+        }
+
+        return nil
+    }
+
+    private static func storeHotKey(_ hotKey: HotKey, in defaults: UserDefaults) {
+        defaults[.hotKey] = hotKey
     }
 }

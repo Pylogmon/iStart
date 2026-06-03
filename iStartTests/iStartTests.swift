@@ -182,6 +182,14 @@ struct iStartTests {
     }
 
     @MainActor
+    @Test func persistedHotKeyLoadsFromDefaultsStorage() {
+        let defaults = isolatedDefaults()
+        defaults[.hotKey] = .commandSpace
+
+        #expect(Defaults.loadHotKey(from: defaults) == .commandSpace)
+    }
+
+    @MainActor
     @Test func unsupportedHotKeyFallsBackToDefault() throws {
         let defaults = isolatedDefaults()
         let hotKey = HotKey(

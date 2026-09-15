@@ -12,10 +12,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private static weak var sharedDelegate: AppDelegate?
 
-    deinit {
-        tearDownHotKeyHandling()
-    }
-
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.sharedDelegate = self
         NSApp.setActivationPolicy(.regular)
@@ -24,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             let model = self.resolveModel()
             self.model = model
+            model.reloadApplicationsInBackground(force: false)
             self.windowController = StartMenuWindowController(model: model) { [weak self] in
                 self?.showSettings()
             }
@@ -79,6 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         let model = resolveModel()
+        model.refreshLoginItemStatus()
 
         if settingsWindowController == nil {
             settingsWindowController = SettingsWindowController(

@@ -11,6 +11,7 @@ struct StartMenuView: View {
     @State private var selectedCategory: ApplicationCategory?
     @State private var draggedPinnedApplication: InstalledApplication?
     @State private var selectedSearchResultID: String?
+    @State private var allAppCategories: [ApplicationCategory]
     @FocusState private var searchFocused: Bool
 
     private let pinnedColumnCount = 6
@@ -28,13 +29,14 @@ struct StartMenuView: View {
         self.model = model
         self.onOpenSettings = onOpenSettings
         _allAppsDisplayMode = State(initialValue: model.defaultAllAppsDisplayMode)
+        _allAppCategories = State(initialValue: Self.categories(for: model.applications))
     }
 
     private var searchResults: [InstalledApplication] {
         Array(model.filteredApplications.prefix(80))
     }
-    private var allAppCategories: [ApplicationCategory] {
-        Dictionary(grouping: model.applications) { application in
+    private static func categories(for applications: [InstalledApplication]) -> [ApplicationCategory] {
+        Dictionary(grouping: applications) { application in
             Self.normalizedCategoryIdentifier(for: application.categoryIdentifier)
         }
         .map { identifier, applications in
@@ -53,12 +55,6 @@ struct StartMenuView: View {
             }
 
             return lhs.id < rhs.id
-        }
-    }
-    private var allAppCategoryRows: [[ApplicationCategory]] {
-        stride(from: 0, to: allAppCategories.count, by: 4).map { startIndex in
-            let endIndex = min(startIndex + 4, allAppCategories.count)
-            return Array(allAppCategories[startIndex..<endIndex])
         }
     }
     private var visiblePinnedApplications: [InstalledApplication] {
@@ -102,7 +98,7 @@ struct StartMenuView: View {
 
             footer
         }
-        .frame(minWidth: 560, minHeight: 620)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
         .overlay(alignment: .top) {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -129,6 +125,10 @@ struct StartMenuView: View {
             selectFirstSearchResult()
         }
         .onChange(of: model.applications) {
+            allAppCategories = Self.categories(for: model.applications)
+            if let categoryID = selectedCategory?.id {
+                selectedCategory = allAppCategories.first { $0.id == categoryID }
+            }
             validateSelectedSearchResult()
         }
         .onReceive(NotificationCenter.default.publisher(for: .startMenuMoveSelectionDown)) { _ in
@@ -329,33 +329,16 @@ struct StartMenuView: View {
 
             switch allAppsDisplayMode {
             case .categories:
-                LazyVStack(spacing: 12) {
-                    ForEach(Array(allAppCategoryRows.enumerated()), id: \.offset) { _, row in
-                        HStack(alignment: .top, spacing: 0) {
-                            ForEach(Array(row.enumerated()), id: \.element.id) { index, category in
-                                ApplicationCategoryCard(category: category) { application in
-                                    launch(application)
-                                } onOpenCategory: {
-                                    openSelectedCategory(category)
-                                }
-
-                                if index < 3 {
-                                    Spacer(minLength: 10)
-                                }
-                            }
-
-                            if row.count < 4 {
-                                ForEach(row.count..<4, id: \.self) { index in
-                                    Color.clear
-                                        .frame(width: ApplicationCategoryLayout.cardSize)
-
-                                    if index < 3 {
-                                        Spacer(minLength: 10)
-                                    }
-                                }
-                            }
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: ApplicationCategoryLayout.cardSize), spacing: 10)],
+                    spacing: 12
+                ) {
+                    ForEach(allAppCategories) { category in
+                        ApplicationCategoryCard(category: category) { application in
+                            launch(application)
+                        } onOpenCategory: {
+                            openSelectedCategory(category)
                         }
-                        .frame(maxWidth: .infinity)
                     }
                 }
             case .list:
@@ -451,7 +434,7 @@ struct StartMenuView: View {
             .frame(maxHeight: 330)
         }
         .padding(20)
-        .frame(width: 430)
+        .frame(maxWidth: 430)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 22, style: .continuous)

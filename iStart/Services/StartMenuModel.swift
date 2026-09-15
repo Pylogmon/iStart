@@ -3,11 +3,25 @@ import Combine
 import Defaults
 import Foundation
 
+@MainActor
 final class StartMenuModel: ObservableObject {
-    @Published var applications: [InstalledApplication] = []
+    @Published var applications: [InstalledApplication] = [] {
+        didSet {
+            applicationsByID = Dictionary(applications.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            applicationsByBundleID = Dictionary(
+                applications.compactMap { app in app.bundleIdentifier.map { ($0, app) } },
+                uniquingKeysWith: { first, _ in first }
+            )
+            cachedFilteredApplications = nil
+        }
+    }
     @Published var pinnedApplicationIDs: [String]
     @Published var recentApplicationIDs: [String]
-    @Published var searchText = ""
+    @Published var searchText = "" {
+        didSet {
+            if searchText != oldValue { cachedFilteredApplications = nil }
+        }
+    }
     @Published var launchError: String?
     @Published var hotKey: HotKey {
         didSet {
@@ -49,18 +63,30 @@ final class StartMenuModel: ObservableObject {
     @Published private(set) var searchFocusToken = UUID()
     @Published private(set) var homeResetToken = UUID()
 
-    private var scanner: ApplicationScanner
+    private var scanner: any ApplicationScanning
     private let defaults: UserDefaults
     private let loginItemManager: LoginItemManaging
-    private var isReloadingApplications = false
+    @Published private(set) var isReloadingApplications = false
+    private var needsApplicationReload = false
+    private var lastApplicationReload: TimeInterval?
+    private var applicationsByID: [String: InstalledApplication] = [:]
+    private var applicationsByBundleID: [String: InstalledApplication] = [:]
+    private var cachedFilteredApplications: [InstalledApplication]?
+    private var applicationDirectoryAccess: [ApplicationDirectoryAccess]
 
     init(
-        scanner: ApplicationScanner = ApplicationScanner(),
+        scanner: any ApplicationScanning = ApplicationScanner(),
         defaults: UserDefaults = .standard,
         loginItemManager: LoginItemManaging = LoginItemService()
     ) {
         var scanner = scanner
-        let applicationSearchDirectoryBookmarks = defaults[.applicationSearchDirectoryBookmarks]
+        let storedBookmarks = defaults[.applicationSearchDirectoryBookmarks]
+        let applicationSearchDirectoryBookmarks = storedBookmarks.map {
+            ApplicationDirectoryBookmark.resolve($0)?.bookmarkData ?? $0
+        }
+        if applicationSearchDirectoryBookmarks != storedBookmarks {
+            defaults[.applicationSearchDirectoryBookmarks] = applicationSearchDirectoryBookmarks
+        }
         scanner.applicationDirectoryBookmarkData = applicationSearchDirectoryBookmarks
         self.scanner = scanner
         self.defaults = defaults
@@ -80,20 +106,23 @@ final class StartMenuModel: ObservableObject {
         self.recommendedApplicationRowCount = recommendedApplicationRowCount
         self.recentApplicationLimit = recentApplicationLimit
         self.loginItemStatus = loginItemManager.status
-        self.applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
+        let directories = Self.applicationSearchDirectoryURLs(from: applicationSearchDirectoryBookmarks)
+        self.applicationDirectoryAccess = directories.map(ApplicationDirectoryAccess.init)
+        self.applicationSearchDirectories = directories
         defaults[.pinnedApplicationRowCount] = pinnedApplicationRowCount
         defaults[.recommendedApplicationRowCount] = recommendedApplicationRowCount
         defaults[.recentApplicationIDs] = recentApplicationIDs
     }
 
     var filteredApplications: [InstalledApplication] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let cachedFilteredApplications { return cachedFilteredApplications }
+        let query = ApplicationSearchIndex.normalize(searchText)
         guard !query.isEmpty else { return applications }
 
-        return applications
+        let results = applications
             .enumerated()
             .compactMap { index, application -> (index: Int, application: InstalledApplication, score: Int)? in
-                guard let score = ApplicationSearchMatcher.score(application, query: query) else { return nil }
+                guard let score = ApplicationSearchMatcher.score(application, normalizedQuery: query) else { return nil }
                 return (index, application, score)
             }
             .sorted { lhs, rhs in
@@ -104,11 +133,12 @@ final class StartMenuModel: ObservableObject {
                 return lhs.index < rhs.index
             }
             .map(\.application)
+        cachedFilteredApplications = results
+        return results
     }
 
     var pinnedApplications: [InstalledApplication] {
-        let indexed = Dictionary(uniqueKeysWithValues: applications.map { ($0.id, $0) })
-        let pinned = pinnedApplicationIDs.compactMap { indexed[$0] }
+        let pinned = pinnedApplicationIDs.compactMap { applicationsByID[$0] }
         if !pinned.isEmpty {
             return pinned
         }
@@ -117,8 +147,7 @@ final class StartMenuModel: ObservableObject {
     }
 
     var recentApplications: [InstalledApplication] {
-        let indexed = Dictionary(uniqueKeysWithValues: applications.map { ($0.id, $0) })
-        return recentApplicationIDs.compactMap { indexed[$0] }
+        recentApplicationIDs.compactMap { applicationsByID[$0] }
     }
 
     var launchesAtLogin: Bool {
@@ -169,7 +198,7 @@ final class StartMenuModel: ObservableObject {
     }
 
     func reloadApplications() {
-        applications = scanner.scan()
+        applyApplications(scanner.scan())
     }
 
     func addApplicationSearchDirectory() {
@@ -207,15 +236,7 @@ final class StartMenuModel: ObservableObject {
 
     func removeApplicationSearchDirectory(_ directory: URL) {
         let keptBookmarks = defaults[.applicationSearchDirectoryBookmarks].filter { bookmarkData in
-            var isStale = false
-            guard let url = try? URL(
-                resolvingBookmarkData: bookmarkData,
-                options: [.withSecurityScope],
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            ), !isStale else {
-                return false
-            }
+            guard let url = ApplicationDirectoryBookmark.resolve(bookmarkData)?.url else { return true }
 
             return url.standardizedFileURL != directory.standardizedFileURL
         }
@@ -224,15 +245,16 @@ final class StartMenuModel: ObservableObject {
         reloadApplicationsInBackground()
     }
 
-    func reloadApplicationsInBackground() {
-        guard Thread.isMainThread else {
-            DispatchQueue.main.async { [weak self] in
-                self?.reloadApplicationsInBackground()
-            }
+    func reloadApplicationsInBackground(force: Bool = true) {
+        if isReloadingApplications {
+            needsApplicationReload = needsApplicationReload || force
             return
         }
 
-        guard !isReloadingApplications else { return }
+        if !force, let lastApplicationReload,
+           ProcessInfo.processInfo.systemUptime - lastApplicationReload < 30 {
+            return
+        }
         isReloadingApplications = true
 
         let scanner = scanner
@@ -241,10 +263,23 @@ final class StartMenuModel: ObservableObject {
 
             DispatchQueue.main.async {
                 guard let self else { return }
-                self.applications = applications
                 self.isReloadingApplications = false
+                if self.needsApplicationReload {
+                    self.needsApplicationReload = false
+                    self.reloadApplicationsInBackground()
+                } else {
+                    if force { AppIconCache.shared.removeAllIcons() }
+                    self.applyApplications(applications)
+                }
             }
         }
+    }
+
+    private func applyApplications(_ applications: [InstalledApplication]) {
+        if self.applications != applications {
+            self.applications = applications
+        }
+        lastApplicationReload = ProcessInfo.processInfo.systemUptime
     }
 
     func focusSearch() {
@@ -333,12 +368,7 @@ final class StartMenuModel: ObservableObject {
             "com.google.Chrome"
         ]
 
-        let indexed = Dictionary(uniqueKeysWithValues: applications.compactMap { app -> (String, InstalledApplication)? in
-            guard let bundleIdentifier = app.bundleIdentifier else { return nil }
-            return (bundleIdentifier, app)
-        })
-
-        let preferred = preferredBundleIDs.compactMap { indexed[$0] }
+        let preferred = preferredBundleIDs.compactMap { applicationsByBundleID[$0] }
         if preferred.count >= 6 {
             return Array(preferred.prefix(18))
         }
@@ -360,32 +390,21 @@ final class StartMenuModel: ObservableObject {
     private func saveApplicationSearchDirectoryBookmarks(_ bookmarks: [Data]) {
         defaults[.applicationSearchDirectoryBookmarks] = bookmarks
         scanner.applicationDirectoryBookmarkData = bookmarks
-        applicationSearchDirectories = Self.applicationSearchDirectoryURLs(from: bookmarks)
+        let directories = Self.applicationSearchDirectoryURLs(from: bookmarks)
+        applicationDirectoryAccess = directories.map(ApplicationDirectoryAccess.init)
+        applicationSearchDirectories = directories
     }
 
     private static func applicationSearchDirectoryURLs(from bookmarks: [Data]) -> [URL] {
         bookmarks.compactMap { bookmarkData in
-            var isStale = false
-            guard let url = try? URL(
-                resolvingBookmarkData: bookmarkData,
-                options: [.withSecurityScope],
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            ), !isStale else {
-                return nil
-            }
-
-            return url
+            ApplicationDirectoryBookmark.resolve(bookmarkData)?.url
         }
     }
 
 }
 
 private enum ApplicationSearchMatcher {
-    static func score(_ application: InstalledApplication, query: String) -> Int? {
-        let normalizedQuery = ApplicationSearchIndex.normalize(query)
-        guard !normalizedQuery.isEmpty else { return 0 }
-
+    static func score(_ application: InstalledApplication, normalizedQuery: String) -> Int? {
         var bestScore: Int?
         for key in searchKeys(for: application) {
             guard let score = key.score(for: normalizedQuery) else { continue }
@@ -431,13 +450,6 @@ private extension ApplicationSearchKey {
 }
 
 private extension String {
-    var initials: String {
-        split(separator: " ")
-            .compactMap(\.first)
-            .map(String.init)
-            .joined()
-    }
-
     func isSubsequenceMatch(for query: String) -> Bool {
         var currentIndex = startIndex
 

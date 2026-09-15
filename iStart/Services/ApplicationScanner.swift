@@ -1,13 +1,18 @@
-import AppKit
 import Darwin
 import Foundation
 
-struct ApplicationScanner {
+nonisolated protocol ApplicationScanning: Sendable {
+    var applicationDirectoryBookmarkData: [Data] { get set }
+    func scan() -> [InstalledApplication]
+}
+
+nonisolated struct ApplicationScanner: ApplicationScanning {
     var searchRoots: [URL] = ApplicationScanner.defaultSearchRoots
     var applicationDirectoryBookmarkData: [Data] = []
 
     func scan() -> [InstalledApplication] {
         var appsByID: [String: InstalledApplication] = [:]
+        var seenPaths: Set<String> = []
         let authorizedRoots = authorizedSearchRoots()
         defer {
             authorizedRoots.forEach { $0.stopAccessing() }
@@ -15,7 +20,7 @@ struct ApplicationScanner {
 
         for root in uniqueSearchRoots(searchRoots + authorizedRoots.map(\.url)) where FileManager.default.fileExists(atPath: root.path) {
             for url in applicationURLs(in: root) {
-                guard url.pathExtension == "app" else { continue }
+                guard seenPaths.insert(url.resolvingSymlinksInPath().standardizedFileURL.path).inserted else { continue }
                 guard let application = makeApplication(from: url) else { continue }
 
                 if appsByID[application.id] == nil {
@@ -30,11 +35,12 @@ struct ApplicationScanner {
     }
 
     private func applicationURLs(in root: URL) -> [URL] {
-        let keys: [URLResourceKey] = [.isApplicationKey, .isSymbolicLinkKey, .localizedNameKey, .isDirectoryKey]
+        let keys: [URLResourceKey] = [.localizedNameKey, .isDirectoryKey]
         var seenPaths: Set<String> = []
         var appURLs: [URL] = []
 
         func append(_ url: URL) {
+            guard (try? url.resolvingSymlinksInPath().resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true else { return }
             let path = url.standardizedFileURL.path
             guard seenPaths.insert(path).inserted else { return }
             appURLs.append(url)
@@ -46,7 +52,7 @@ struct ApplicationScanner {
             options: []
         ) {
             topLevelURLs
-                .filter { $0.pathExtension == "app" }
+                .filter { $0.pathExtension.lowercased() == "app" }
                 .forEach(append)
         }
 
@@ -58,8 +64,9 @@ struct ApplicationScanner {
             return appURLs
         }
 
-        for case let url as URL in enumerator where url.pathExtension == "app" {
+        for case let url as URL in enumerator where url.pathExtension.lowercased() == "app" {
             append(url)
+            enumerator.skipDescendants()
         }
 
         return appURLs
@@ -93,15 +100,7 @@ struct ApplicationScanner {
 
     private func authorizedSearchRoots() -> [AuthorizedSearchRoot] {
         applicationDirectoryBookmarkData.compactMap { bookmarkData in
-            var isStale = false
-            guard let url = try? URL(
-                resolvingBookmarkData: bookmarkData,
-                options: [.withSecurityScope],
-                relativeTo: nil,
-                bookmarkDataIsStale: &isStale
-            ), !isStale else {
-                return nil
-            }
+            guard let url = ApplicationDirectoryBookmark.resolve(bookmarkData)?.url else { return nil }
 
             return AuthorizedSearchRoot(url: url, didStartAccessing: url.startAccessingSecurityScopedResource())
         }
@@ -127,21 +126,24 @@ struct ApplicationScanner {
     }
 }
 
-enum ApplicationSearchIndex {
+nonisolated enum ApplicationSearchIndex {
     static func keys(name: String, bundleIdentifier: String?) -> [ApplicationSearchKey] {
-        var keys: [ApplicationSearchKey] = [
-            ApplicationSearchKey(text: normalize(name), weight: 0),
-            ApplicationSearchKey(text: normalize(name, keepingSpaces: true), weight: 10),
-            ApplicationSearchKey(text: initials(for: normalize(name, keepingSpaces: true)), weight: 30),
+        let spacedName = normalize(name, keepingSpaces: true)
+        let spacedPinyin = normalize(pinyinSearchText(for: name), keepingSpaces: true)
+        let keys: [ApplicationSearchKey] = [
+            ApplicationSearchKey(text: spacedName.replacingOccurrences(of: " ", with: ""), weight: 0),
+            ApplicationSearchKey(text: spacedName, weight: 10),
+            ApplicationSearchKey(text: initials(for: spacedName), weight: 30),
+            ApplicationSearchKey(text: spacedPinyin.replacingOccurrences(of: " ", with: ""), weight: 20),
+            ApplicationSearchKey(text: spacedPinyin, weight: 25),
+            ApplicationSearchKey(text: initials(for: spacedPinyin), weight: 35),
             ApplicationSearchKey(text: normalize(bundleIdentifier ?? ""), weight: 60)
         ]
 
-        let pinyin = pinyinSearchText(for: name)
-        keys.append(ApplicationSearchKey(text: normalize(pinyin), weight: 20))
-        keys.append(ApplicationSearchKey(text: normalize(pinyin, keepingSpaces: true), weight: 25))
-        keys.append(ApplicationSearchKey(text: initials(for: normalize(pinyin, keepingSpaces: true)), weight: 35))
-
-        return keys.filter { !$0.text.isEmpty }
+        var seen: Set<String> = []
+        return keys.sorted { $0.weight < $1.weight }.filter {
+            !$0.text.isEmpty && seen.insert($0.text).inserted
+        }
     }
 
     static func normalize(_ text: String, keepingSpaces: Bool = false) -> String {
@@ -179,7 +181,7 @@ enum ApplicationSearchIndex {
     }
 }
 
-private struct AuthorizedSearchRoot {
+private nonisolated struct AuthorizedSearchRoot {
     let url: URL
     let didStartAccessing: Bool
 
@@ -241,12 +243,20 @@ private enum AppNameResolver {
         info: [String: Any],
         localizedInfo: [String: String]
     ) -> String {
+        func fileSystemName(_ name: String?) -> String? {
+            // Launch Services can append another .app to bundles using .APP or .App.
+            if let name, name.caseInsensitiveCompare(url.lastPathComponent + ".app") == .orderedSame {
+                return String(name.dropLast(4))
+            }
+            return name
+        }
+
         let candidates = [
             localizedInfo["CFBundleDisplayName"],
             info["CrAppModeShortcutName"] as? String,
             localizedInfo["CFBundleName"],
-            (try? url.resourceValues(forKeys: [.localizedNameKey]).localizedName),
-            FileManager.default.displayName(atPath: url.path),
+            fileSystemName(try? url.resourceValues(forKeys: [.localizedNameKey]).localizedName),
+            fileSystemName(FileManager.default.displayName(atPath: url.path)),
             info["CFBundleDisplayName"] as? String,
             info["CFBundleName"] as? String,
             url.deletingPathExtension().lastPathComponent
@@ -260,11 +270,6 @@ private enum AppNameResolver {
     }
 
     nonisolated private static func stripApplicationExtension(_ name: String) -> String {
-        let extensions = [".app", ".APP"]
-        for suffix in extensions where name.hasSuffix(suffix) {
-            return String(name.dropLast(suffix.count))
-        }
-
-        return name
+        name.lowercased().hasSuffix(".app") ? String(name.dropLast(4)) : name
     }
 }

@@ -2,7 +2,7 @@ import Carbon.HIToolbox
 import Defaults
 import Foundation
 
-struct HotKey: Codable, Defaults.Serializable, Equatable, Identifiable {
+nonisolated struct HotKey: Codable, Defaults.Serializable, Equatable, Identifiable, Sendable {
     var id: String { rawValue }
 
     let rawValue: String

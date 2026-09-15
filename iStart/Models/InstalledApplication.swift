@@ -1,6 +1,6 @@
 import Foundation
 
-struct InstalledApplication: Identifiable, Codable, Hashable {
+nonisolated struct InstalledApplication: Identifiable, Codable, Hashable, Sendable {
     var id: String
     var name: String
     var bundleIdentifier: String?
@@ -13,7 +13,7 @@ struct InstalledApplication: Identifiable, Codable, Hashable {
     }
 }
 
-struct ApplicationSearchKey: Codable, Hashable {
+nonisolated struct ApplicationSearchKey: Codable, Hashable, Sendable {
     var text: String
     var weight: Int
 }

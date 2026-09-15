@@ -1,17 +1,20 @@
 import AppKit
 import Carbon.HIToolbox
+import Combine
 import SwiftUI
 
 final class StartMenuWindowController {
     private let model: StartMenuModel
     private let panel: StartMenuPanel
-    private var hideObserver: NSObjectProtocol?
+    private var hideObserver: AnyCancellable?
 
     init(model: StartMenuModel, onOpenSettings: @escaping () -> Void) {
         self.model = model
 
         let contentView = StartMenuView(model: model, onOpenSettings: onOpenSettings)
         let hostingView = NSHostingView(rootView: contentView)
+        // The panel owns its frame, so extra min/ideal/max size measurements are unnecessary.
+        hostingView.sizingOptions = []
         hostingView.wantsLayer = true
         hostingView.layer?.cornerRadius = 18
         hostingView.layer?.cornerCurve = .continuous
@@ -36,13 +39,11 @@ final class StartMenuWindowController {
             self?.hide()
         }
 
-        hideObserver = NotificationCenter.default.addObserver(
-            forName: .startMenuShouldHide,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.hide()
-        }
+        hideObserver = NotificationCenter.default.publisher(for: .startMenuShouldHide)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.hide() }
+            }
     }
 
     func toggle() {
@@ -54,7 +55,7 @@ final class StartMenuWindowController {
     }
 
     func showAndFocusSearch() {
-        model.reloadApplicationsInBackground()
+        model.reloadApplicationsInBackground(force: false)
         let targetFrame = targetPanelFrame()
         panel.setFrame(startingFrame(for: targetFrame), display: true)
         panel.alphaValue = 0

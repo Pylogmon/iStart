@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="#特性"><img alt="macOS" src="https://img.shields.io/badge/macOS-26.0%2B-111111?logo=apple"></a>
+  <a href="#特性"><img alt="macOS" src="https://img.shields.io/badge/macOS-14.0%2B-111111?logo=apple"></a>
   <a href="#开发"><img alt="Swift" src="https://img.shields.io/badge/Swift-5-orange?logo=swift"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/pylogmon/iStart"></a>
 </p>
@@ -28,7 +28,7 @@ iStart 把熟悉的“开始菜单”体验带到 macOS：按下全局快捷键�
 
 ## 特性
 
-- **全局快捷键**：支持 `Command Space`、`Option Space`、`Control Space`、`Command Option Space` 唤起菜单。
+- **全局快捷键**：支持 `Command Space`、`Option Space` 唤起菜单。
 - **快速应用搜索**：按应用名、Bundle ID、首字母和拼音友好的匹配方式查找应用。
 - **固定应用**：把常用应用固定到开始菜单网格，并支持拖拽排序。
 - **最近打开**：自动记录最近启动的应用，方便快速回到工作流。
@@ -61,6 +61,8 @@ iStart 把熟悉的“开始菜单”体验带到 macOS：按下全局快捷键�
 
 ### 环境要求
 
-- macOS 26.0 或更高版本
-- 支持 macOS 26 SDK 的 Xcode
-- Swift 5
+- 运行环境：macOS 14.0 或更高版本
+- 构建环境：Xcode 26 或更高版本（依赖的包清单要求 Swift 6.2 或更高版本的工具链）
+- Swift 5 语言模式
+
+菜单打开时最多每 30 秒自动刷新一次应用索引；在 **Settings > Applications > Rebuild Index** 中可立即强制刷新应用和图标。
